@@ -1,0 +1,63 @@
+Index: src/kern/thread_object.cpp
+===================================================================
+--- src/kern/thread_object.cpp	(revision 41974)
++++ src/kern/thread_object.cpp	(working copy)
+@@ -676,6 +676,58 @@
+       value = consumed_time();
+     }
+ 
++       //*special* mode
++  if (utcb->values[1] ==  0xBABE) {
++
++       //Information
++       switch (utcb->values[2]) {
++               case 0x0001:
++                       //Information 
++                       //Returns in mr[1] Monitor/MWait availability (1= available, 0 = not)
++                       //        in mr[2] minimal range size
++                       //        in mr[3] maximal range size
++                       Mword features;
++
++                       asm volatile(   "MOV $1,%%eax\n"
++                                       "cpuid\n"
++                                       : "=c" (features) : : "eax", "ebx", "edx");
++
++                       utcb->values[1] = (utcb->values[1] >> 3)&1;
++
++                       if (utcb->values[1]) {
++                               asm volatile(   "MOV $5,%%eax\n"
++                                       "CPUID\n"
++                                       : "=a" (utcb->values[2]), "=b" (utcb->values[3]) :: "edx", "ecx");
++                       } else {
++                               utcb->values[2] = 0;
++                               utcb->values[3] = 0;
++                       }
++                       break;
++               case 0x0002:
++                       //Parameters
++                       //      in mr[3] address to monitor/wait on
++                       //      in mr[4] the CURRENT l4_umword_t value in there (return if it is no longer this value)
++		       //      in mr[5] the wished for c-state
++		       //Returns TSC of wakeup (or zero if no mwait was done) in mr[1]:mr[2]
++                       asm volatile("MONITOR\n" :: "a" (utcb->values[3]), "c"(0), "d"(0));
++		       utcb->values[2] = 0;
++		       utcb->values[1] = 0;
++                       if (*(Mword*)(utcb->values[3]) == utcb->values[4]) {
++                               asm volatile("MWAIT\n" :: "a"((utcb->values[5]<<3)&0xF0),"c"(utcb->values[5]&1));
++			       asm volatile("RDTSCP\n" : "=a"(utcb->values[2]), "=d"(utcb->values[1]) : : "ecx");
++			}			
++                       break;
++	       case 0x0003:
++	       		asm volatile("RDMSR" : "=a"(utcb->values[2]), "=d"(utcb->values[1]) : "c"(utcb->values[3]));
++			break;
++	       case 0x0004:
++			asm volatile("WRMSR" : : "a"(utcb->values[4]), "d"(utcb->values[5]), "c"(utcb->values[3]));
++			break;
++               default:
++                       break;
++       }
++  }
++
+   reinterpret_cast<Utcb::Time_val *>(utcb->values)->t = value;
+ 
+   return commit_result(0, Utcb::Time_val::Words);

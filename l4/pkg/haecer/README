@@ -1,0 +1,31 @@
+Hi Karl,
+
+the haecer library can be found here:
+
+tudos.org/~mhaehnel/haecer.tar.gz
+
+it requires another lib called libdebug that provides MSR access for the
+userland. This is purely a means of benchmarking and measurements as it
+severely breaks security of the system because MSR accesses are NOT
+filtered! The libdebug.tar.gz contains a kernel patch that needs to be
+applied for passing through MSRs.
+
+tudos.org/~mhaehnel/libdebug.tar.gz
+
+Both packages have not been tested for quite some time and are likely
+not to compile. They may also kill your kitten. Please use at your own
+risk.
+
+For interaction of haecer and ferret (which is optional) please refer to
+the lib/src/Makefile in haecer which contains the relevant define
+commented out.
+
+Please not that while ferret is a generic monitoring framework haecer is
+especially geared towards simplified access to performance counters. It
+does not have the generic capabilities that ferret features.
+
+I hope that this helps you!
+
+Best regards,
+
+- Marcus
