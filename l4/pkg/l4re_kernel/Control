@@ -1,3 +1,0 @@
-requires: l4re-util libc_minimal libsupc++_minimal libloader
-          libc_be_minimal_log_io libc_minimal_l4re dom0
-maintainer: warg@os.inf.tu-dresden.de

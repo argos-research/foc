@@ -1,3 +1,0 @@
-requires: libc
-provides: libedid
-maintainer: matthias.lange@kernkonzept.com

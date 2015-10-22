@@ -1,3 +1,0 @@
-provides: libkproxy
-requires: l4sys cxx_base l4re-util
-Maintainer: adam@os.inf.tu-dresden.de

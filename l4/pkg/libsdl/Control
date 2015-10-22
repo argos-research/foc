@@ -1,3 +1,0 @@
-provides: libsdl
-requires: libpthread l4re_c-util libc_support_misc
-maintainer: adam@os.inf.tu-dresden.de

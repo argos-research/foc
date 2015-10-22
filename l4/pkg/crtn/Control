@@ -1,3 +1,0 @@
-provides: crtn
-requires: l4sys libgcc
-maintainer: warg@os.inf.tu-dresden.de

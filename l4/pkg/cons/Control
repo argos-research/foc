@@ -1,2 +1,0 @@
-requires: stdlibs libstdc++ cxx_libc_io cxx_io
-Maintainer: adam@os.inf.tu-dresden.de

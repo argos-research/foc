@@ -1,3 +1,0 @@
-provides: libocaml_asmrun
-requires: stdlibs libpthread
-maintainer: benjamin@os.inf.tu-dresden.de, adam@os.inf.tu-dresden.de

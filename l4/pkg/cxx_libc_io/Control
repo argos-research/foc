@@ -1,3 +1,0 @@
-requires: cxx_io libc-headers libstdc++-headers
-provides: cxx_libc_io
-Maintainer: warg@os.inf.tu-dresden.de

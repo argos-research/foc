@@ -1,3 +1,0 @@
-provides: libdrivers-lcd libdrivers-input libdrivers-generic
-requires: libc l4re_c libio input drivers-frst
-Maintainer: adam@os.inf.tu-dresden.de

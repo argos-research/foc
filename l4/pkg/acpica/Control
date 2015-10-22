@@ -1,3 +1,0 @@
-provides: acpica
-requires: l4re libc
-maintainer: warg@os.inf.tu-dresden.de

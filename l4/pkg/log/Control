@@ -1,3 +1,0 @@
-provides: log
-requires: libc l4re
-maintainer: adam@os.inf.tu-dresden.de

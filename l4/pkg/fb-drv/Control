@@ -1,2 +1,0 @@
-requires: libdrivers-lcd x86emu_int10 stdlibs libio
-maintainer: adam@os.inf.tu-dresden.de

@@ -1,2 +1,0 @@
-prog: ../../drd/tests/annotate_smart_pointer
-args: 50 5

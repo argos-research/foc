@@ -1,3 +1,0 @@
-requires: stdlibs libc_support_misc libocaml_asmrun
-provides: libocaml_ext2
-maintainer: benjamin@os.inf.tu-dresden.de

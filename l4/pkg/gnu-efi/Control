@@ -1,3 +1,0 @@
-requires: stdlibs
-provides: libefi libgnuefi
-maintainer: matthias.lange@kernkonzept.com

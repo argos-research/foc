@@ -1,3 +1,0 @@
-provides: libgomp
-requires: libc libpthread
-maintainer: adam@os.inf.tu-dresden.de

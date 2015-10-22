@@ -1,3 +1,0 @@
-provides: libloader
-requires: l4sys l4util ldscripts l4re
-maintainer: adam@os.inf.tu-dresden.de, warg@os.inf.tu-dresden.de

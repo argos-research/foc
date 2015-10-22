@@ -1,4 +1,0 @@
-bootp
-dhcp
-netboot_init
-print_network_configuration

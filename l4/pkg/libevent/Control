@@ -1,3 +1,0 @@
-provides: libevent
-requires: libpthread
-maintainer: adam@os.inf.tu-dresden.de

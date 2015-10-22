@@ -1,3 +1,0 @@
-provides: dde-libinput
-requires: dde-linux26 ddekit input
-maintainer: adam@os.inf.tu-dresden.de

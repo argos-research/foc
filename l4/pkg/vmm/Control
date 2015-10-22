@@ -1,2 +1,0 @@
-requires: stdlibs libstdc++ libpthread libio-vbus libfdt
-maintainer: alexander.warg@kernkonzept.com, adam@l4re.org

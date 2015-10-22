@@ -1,2 +1,0 @@
-requires: libc_support_misc libc_be_file_stdin
-maintainer: adam@os.inf.tu-dresden.de

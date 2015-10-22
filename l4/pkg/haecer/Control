@@ -1,4 +1,0 @@
-#requires: ferret-producer ferret-common
-provides: haecer
-requires: libdebug
-maintainer: mhaehnel@os.inf.tu-dresden.de

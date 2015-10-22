@@ -1,3 +1,0 @@
-requires: libpthread l4sys libc
-provides: libiniparser
-maintainer: doebel@os.inf.tu-dresden.de
