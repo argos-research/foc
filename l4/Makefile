@@ -19,7 +19,7 @@ all::
 #####################
 # config-tool
 
-DROPSCONF 		= y
+DROPSCONF		= y
 DROPSCONF_DEFCONFIG	?= $(L4DIR)/mk/defconfig/config.x86
 KCONFIG_FILE            = $(OBJ_BASE)/Kconfig.generated
 KCONFIG_FILE_SRC        = $(L4DIR)/mk/Kconfig
@@ -133,7 +133,7 @@ clean cleanall install::
 
 cleanfast:
 	$(VERBOSE)$(RM) -r $(addprefix $(OBJ_BASE)/,bin include pkg doc ext-pkg pc lib l4defs.mk.inc l4defs.sh.inc) \
-	                   $(IMAGES_DIR)
+			   $(IMAGES_DIR)
 
 
 L4DEF_FILE_MK ?= $(OBJ_BASE)/l4defs.mk.inc
@@ -183,7 +183,7 @@ export HOST_SYSTEM
 # The variables are defined in mk/Makeconf, which sources Makeconf.bid.local.
 # Hence, we have to 1) postprocess, 2) call make again to get the variables.
 DROPSCONF_CONFIG_MK_POST_HOOK:: check_build_tools $(OBJ_DIR)/Makefile
-        # libgendep must be done before calling make with the local helper
+	# libgendep must be done before calling make with the local helper
 	$(VERBOSE)$(MAKE) libgendep
 	$(VERBOSE)$(MAKE) Makeconf.bid.local-helper || \
 		(rm -f $(DROPSCONF_CONFIG_MK) $(CONFIG_MK_REAL) $(CONFIG_MK_INDEP); false)
@@ -192,7 +192,7 @@ DROPSCONF_CONFIG_MK_POST_HOOK:: check_build_tools $(OBJ_DIR)/Makefile
 
 define extract_var
 	$(1)=$$((cat $(2); echo printit:;                  \
-	         echo '	@echo $$($(3))') |                 \
+		 echo '	@echo $$($(3))') |                 \
 		$(MAKE) --no-print-directory -f - printit)
 endef
 
@@ -203,7 +203,7 @@ define create_kconfig
 	while IFS="" read l; do                                      \
 	  if [ "$$l" = "INSERT_PLATFORMS" ]; then                    \
 	    for p in $(wildcard $(L4DIR)/conf/platforms/*.conf       \
-	                        $(L4DIR)/mk/platforms/*.conf); do    \
+				$(L4DIR)/mk/platforms/*.conf); do    \
 	      $(call extract_var,n,$$p,PLATFORM_NAME);               \
 	      pn=$${p##*/};                                          \
 	      pn=$${pn%.conf};                                       \
@@ -247,15 +247,15 @@ checkconf:
 # caching of some variables. Others are determined directly.
 # The contents of the variables to cache is already defined in mk/Makeconf.
 .PHONY: Makeconf.bid.local-helper Makeconf.bid.local-internal-names \
-        libgendep checkconf
+	libgendep checkconf
 ARCH = $(BUILD_ARCH)
 CC := $(if $(filter sparc,$(ARCH)),$(if $(call GCCIS_sparc_leon_f),sparc-elf-gcc,$(CC)),$(CC))
 LD := $(if $(filter sparc,$(ARCH)),$(if $(call GCCIS_sparc_leon_f),sparc-elf-ld,$(LD)),$(LD))
 Makeconf.bid.local-helper:
 	$(VERBOSE)echo BUILD_SYSTEMS="$(strip $(ARCH)_$(CPU)            \
-	               $(ARCH)_$(CPU)-$(BUILD_ABI))" >> $(DROPSCONF_CONFIG_MK)
+		       $(ARCH)_$(CPU)-$(BUILD_ABI))" >> $(DROPSCONF_CONFIG_MK)
 	$(VERBOSE)$(foreach v, GCCDIR GCCLIB_HOST GCCLIB_EH GCCLIB_S_SO \
-	                GCCVERSION GCCMAJORVERSION GCCMINORVERSION      \
+			GCCVERSION GCCMAJORVERSION GCCMINORVERSION      \
 			GCC_HAS_ATOMICS                   \
 			GCCNOSTACKPROTOPT GCCSTACKPROTOPT GCCSTACKPROTALLOPT LDVERSION \
 			GCCSYSLIBDIRS GCCFORTRANAVAIL                                 \
@@ -264,7 +264,7 @@ Makeconf.bid.local-helper:
 			echo $(v)=$(call $(v)_f,$(ARCH))                \
 			>>$(DROPSCONF_CONFIG_MK);)
 	$(VERBOSE)$(foreach v, crtbegin.o crtbeginS.o crtbeginT.o \
-	                       crtendS.o crtend.o, \
+			       crtendS.o crtend.o, \
 			echo GCCLIB_FILE_$(v)=$(call GCCLIB_file_f,$(v))   \
 			>>$(DROPSCONF_CONFIG_MK);)
 	$(VERBOSE)$(foreach v, LD_GENDEP_PREFIX, echo $v=$($(v)) >>$(DROPSCONF_CONFIG_MK);)
@@ -284,7 +284,7 @@ Makeconf.bid.local-helper:
 	$(VERBOSE)echo -e 'include $(call absfilename,$(CONFIG_MK_INDEP))' >>$(CONFIG_MK_REAL).tmp2
 	$(VERBOSE)echo -e 'include $(call absfilename,$(CONFIG_MK_PLATFORM))' >>$(CONFIG_MK_REAL).tmp2
 	$(VERBOSE)if [ -e "$(CONFIG_MK_REAL)" ]; then                        \
-	            diff --brief -I ^COLOR_TERMINAL $(CONFIG_MK_REAL) $(CONFIG_MK_REAL).tmp2 || \
+		    diff --brief -I ^COLOR_TERMINAL $(CONFIG_MK_REAL) $(CONFIG_MK_REAL).tmp2 || \
 		      mv $(CONFIG_MK_REAL).tmp2 $(CONFIG_MK_REAL);           \
 		  else                                                       \
 		    mv $(CONFIG_MK_REAL).tmp2 $(CONFIG_MK_REAL);             \
@@ -310,8 +310,8 @@ ifneq ($(CONFIG_INT_LD_NAME_SWITCH),)
 	$(VERBOSE) set -e; echo INT_LD_NAME=$$($(LD) 2>&1 | perl -p -e 's,^(.+/)?(.+):.+,$$2,') >> $(DROPSCONF_CONFIG_MK)
 endif
 	$(VERBOSE)emulations=$$(LANG= $(firstword $(LD)) --help |        \
-	                        grep -i "supported emulations:" |        \
-	                        sed -e 's/.*supported emulations: //') ; \
+				grep -i "supported emulations:" |        \
+				sed -e 's/.*supported emulations: //') ; \
 	unset found_it;                                                  \
 	for e in $$emulations; do                                        \
 	  for c in $(LD_EMULATION_CHOICE_$(ARCH)); do                    \
@@ -328,9 +328,9 @@ endif
 
 libgendep:
 	$(VERBOSE)if [ ! -r tool/gendep/Makefile ]; then	\
-	            echo "=== l4/tool/gendep missing! ===";	\
+		    echo "=== l4/tool/gendep missing! ===";	\
 		    exit 1;					\
-	          fi
+		  fi
 	$(VERBOSE)PWD=$(PWD)/tool/gendep $(MAKE) -C tool/gendep
 
 check_build_tools:
@@ -386,7 +386,7 @@ define genimage
 	$(MKDIR) $(IMAGES_DIR);                                           \
 	PWD=$(PWD)/pkg/bootstrap/server/src $(common_envvars)             \
 	    $(MAKE) -C pkg/bootstrap/server/src ENTRY="$$e"               \
-	            BOOTSTRAP_MODULES_LIST=$$ml $(1)                      \
+		    BOOTSTRAP_MODULES_LIST=$$ml $(1)                      \
 		    BOOTSTRAP_MODULE_PATH_BINLIB="$(BUILDDIR_SEARCHPATH)" \
 		    BOOTSTRAP_SEARCH_PATH="$(MODULE_SEARCH_PATH)"
 endef
@@ -396,7 +396,6 @@ define switch_ram_base_func
 	echo "# File semi-automatically generated by 'make switch_ram_base'" > $(OBJ_BASE)/Makeconf.ram_base; \
 	echo "RAM_BASE := $(1)"                                             >> $(OBJ_BASE)/Makeconf.ram_base; \
 	PWD=$(PWD)/pkg/sigma0/server/src $(MAKE) RAM_BASE=$(1) -C pkg/sigma0/server/src;                      \
-	PWD=$(PWD)/pkg/moe/server/src    $(MAKE) RAM_BASE=$(1) -C pkg/moe/server/src;                         \
 	echo "RAM_BASE_SWITCH_OK := yes"                                    >> $(OBJ_BASE)/Makeconf.ram_base
 endef
 
@@ -521,7 +520,7 @@ exportpack:
 	 QEMU=$$qemu L4DIR=$(L4DIR)                                       \
 	 $(tool_envvars) $(common_envvars)                                \
 	  $(L4DIR)/tool/bin/genexportpack --timeout=$(GRUB_TIMEOUT)       \
-	                                   $$ml $$TARGETDIR $$e;
+					   $$ml $$TARGETDIR $$e;
 
 help::
 	@echo
@@ -530,22 +529,22 @@ help::
 	@echo "  elfimage   - Generate an ELF image, containing all modules."
 	@echo "  rawimage   - Generate a raw image (memory dump), containing all modules."
 	@echo "  uimage     - Generate a uimage for u-boot, containing all modules."
-	@echo "  grub1iso   - Generate an ISO using GRUB1 in images/<name>.iso [x86, amd64]" 
-	@echo "  grub2iso   - Generate an ISO using GRUB2 in images/<name>.iso [x86, amd64]" 
-	@echo "  qemu       - Use Qemu to run 'name'." 
-	@echo "  exportpack - Export binaries with launch support." 
-	@echo "  vbox       - Use VirtualBox to run 'name'." 
+	@echo "  grub1iso   - Generate an ISO using GRUB1 in images/<name>.iso [x86, amd64]"
+	@echo "  grub2iso   - Generate an ISO using GRUB2 in images/<name>.iso [x86, amd64]"
+	@echo "  qemu       - Use Qemu to run 'name'."
+	@echo "  exportpack - Export binaries with launch support."
+	@echo "  vbox       - Use VirtualBox to run 'name'."
 	@echo "  fastboot   - Call fastboot with the created rawimage."
 	@echo "  fastboot_rawimage - Call fastboot with the created rawimage."
 	@echo "  fastboot_uimage   - Call fastboot with the created uimage."
-	@echo "  ux         - Run 'name' under Fiasco/UX. [x86]" 
-	@echo "  kexec      - Issue a kexec call to start the entry." 
+	@echo "  ux         - Run 'name' under Fiasco/UX. [x86]"
+	@echo "  kexec      - Issue a kexec call to start the entry."
 	@echo " Add 'E=name' to directly select the entry without using the menu."
 	@echo " Modules are defined in conf/modules.list."
 
 listplatforms:
 	$(VERBOSE)for p in $(wildcard $(L4DIR)/conf/platforms/*.conf    \
-	                              $(L4DIR)/mk/platforms/*.conf); do \
+				      $(L4DIR)/mk/platforms/*.conf); do \
 	  $(call extract_var,a,$$p,PLATFORM_ARCH);                      \
 	  for ar in $$a; do                                             \
 	    [ "$$ar" = "$(BUILD_ARCH)" ] && arch_hit=1;                 \
@@ -561,8 +560,8 @@ listplatforms:
 
 
 .PHONY: elfimage rawimage uimage qemu vbox ux switch_ram_base \
-        grub1iso grub2iso listentries shellcodeentry exportpack \
-        fastboot fastboot_rawimage fastboot_uimage \
+	grub1iso grub2iso listentries shellcodeentry exportpack \
+	fastboot fastboot_rawimage fastboot_uimage \
 	check_and_adjust_ram_base listplatforms
 
 switch_ram_base:
@@ -679,8 +678,8 @@ report:
 	@echo "OBJ_DIR:   $(OBJ_DIR)"
 	@echo
 	@for i in pkg \
-	          ../kernel/fiasco/src/kern/ia32 \
-	          ../tools/preprocess/src/preprocess; do \
+		  ../kernel/fiasco/src/kern/ia32 \
+		  ../tools/preprocess/src/preprocess; do \
 	  if [ -e $$i ]; then \
 	    echo Path $$i found ; \
 	  else                \
@@ -690,7 +689,7 @@ report:
 	@echo
 	@echo Configuration:
 	@for i in $(OBJ_DIR)/.config.all $(OBJ_DIR)/.kconfig   \
-	          $(OBJ_DIR)/Makeconf.local                    \
+		  $(OBJ_DIR)/Makeconf.local                    \
 		  $(L4DIR_ABS)/Makeconf.local                  \
 		  $(OBJ_DIR)/conf/Makeconf.boot                \
 		  $(L4DIR_ABS)/conf/Makeconf.boot; do          \
@@ -712,11 +711,11 @@ help::
 	@echo
 	@echo "Miscellaneous targets:"
 	@echo "  switch_ram_base RAM_BASE=0xaddr"
-	@echo "                   - Switch physical RAM base of build to 'addr'." 
-	@echo "  update           - Update working copy by using SVN." 
-	@echo "  cont             - Continue building after fixing a build error." 
-	@echo "  clean            - Call 'clean' target recursively." 
-	@echo "  cleanfast        - Delete all directories created during build." 
-	@echo "  report           - Print out host configuration information." 
-	@echo "  help             - Print this help text." 
+	@echo "                   - Switch physical RAM base of build to 'addr'."
+	@echo "  update           - Update working copy by using SVN."
+	@echo "  cont             - Continue building after fixing a build error."
+	@echo "  clean            - Call 'clean' target recursively."
+	@echo "  cleanfast        - Delete all directories created during build."
+	@echo "  report           - Print out host configuration information."
+	@echo "  help             - Print this help text."
 	@echo "  listplatforms    - List available platforms."
