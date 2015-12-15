@@ -68,7 +68,7 @@ typedef struct l4_sched_cpu_set_t
  */
 L4_INLINE l4_sched_cpu_set_t
 l4_sched_cpu_set(l4_umword_t offset, unsigned char granularity,
-                 l4_umword_t map L4_DEFAULT_PARAM(1)) L4_NOTHROW;
+		 l4_umword_t map L4_DEFAULT_PARAM(1)) L4_NOTHROW;
 
 /**
  * \brief Get scheduler information.
@@ -84,14 +84,14 @@ l4_sched_cpu_set(l4_umword_t offset, unsigned char granularity,
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_info(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
-                  l4_sched_cpu_set_t *cpus) L4_NOTHROW;
+		  l4_sched_cpu_set_t *cpus) L4_NOTHROW;
 
 /**
  * \internal
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_info_u(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
-                    l4_sched_cpu_set_t *cpus, l4_utcb_t *utcb) L4_NOTHROW;
+		    l4_sched_cpu_set_t *cpus, l4_utcb_t *utcb) L4_NOTHROW;
 
 
 /**
@@ -123,7 +123,16 @@ typedef struct l4_sched_param_t
  */
 L4_INLINE l4_sched_param_t
 l4_sched_param(unsigned prio,
-               l4_cpu_time_t quantum L4_DEFAULT_PARAM(0)) L4_NOTHROW;
+	       l4_cpu_time_t quantum L4_DEFAULT_PARAM(0)) L4_NOTHROW;
+
+/**
+ * \brief Construct scheduler parameter by type.
+ * \ingroup l4_scheduler_api
+ * \author Valentin Hauner
+ */
+L4_INLINE l4_sched_param_t
+l4_sched_param_by_type(l4_sched_param_type_t type, unsigned metric,
+		       l4_cpu_time_t quantum L4_DEFAULT_PARAM(0)) L4_NOTHROW;
 
 /**
  * \brief Run a thread on a Scheduler.
@@ -137,14 +146,14 @@ l4_sched_param(unsigned prio,
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_run_thread(l4_cap_idx_t scheduler,
-                        l4_cap_idx_t thread, l4_sched_param_t const *sp) L4_NOTHROW;
+			l4_cap_idx_t thread, l4_sched_param_t const *sp) L4_NOTHROW;
 
 /**
  * \internal
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
-                          l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW;
+			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW;
 
 /**
  * \brief Query idle time of a CPU, in µs.
@@ -164,7 +173,7 @@ l4_scheduler_idle_time(l4_cap_idx_t scheduler, l4_sched_cpu_set_t const *cpus) L
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_idle_time_u(l4_cap_idx_t scheduler, l4_sched_cpu_set_t const *cpus,
-                         l4_utcb_t *utcb) L4_NOTHROW;
+			 l4_utcb_t *utcb) L4_NOTHROW;
 
 
 
@@ -184,7 +193,7 @@ l4_scheduler_is_online(l4_cap_idx_t scheduler, l4_umword_t cpu) L4_NOTHROW;
  */
 L4_INLINE int
 l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
-                         l4_utcb_t *utcb) L4_NOTHROW;
+			 l4_utcb_t *utcb) L4_NOTHROW;
 
 
 
@@ -205,7 +214,7 @@ enum L4_scheduler_ops
 
 L4_INLINE l4_sched_cpu_set_t
 l4_sched_cpu_set(l4_umword_t offset, unsigned char granularity,
-                 l4_umword_t map) L4_NOTHROW
+		 l4_umword_t map) L4_NOTHROW
 {
   l4_sched_cpu_set_t cs;
   cs.offset      = offset;
@@ -248,7 +257,7 @@ l4_sched_param(unsigned prio, l4_cpu_time_t quantum) L4_NOTHROW
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_info_u(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
-                    l4_sched_cpu_set_t *cpus, l4_utcb_t *utcb) L4_NOTHROW
+		    l4_sched_cpu_set_t *cpus, l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *m = l4_utcb_mr_u(utcb);
   l4_msgtag_t res;
@@ -271,7 +280,7 @@ l4_scheduler_info_u(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
-                          l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW
+			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *m = l4_utcb_mr_u(utcb);
   m->mr[0] = L4_SCHEDULER_RUN_THREAD_OP;
@@ -290,7 +299,7 @@ l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_idle_time_u(l4_cap_idx_t scheduler, l4_sched_cpu_set_t const *cpus,
-                         l4_utcb_t *utcb) L4_NOTHROW
+			 l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
   v->mr[0] = L4_SCHEDULER_IDLE_TIME_OP;
@@ -302,7 +311,7 @@ l4_scheduler_idle_time_u(l4_cap_idx_t scheduler, l4_sched_cpu_set_t const *cpus,
 
 L4_INLINE int
 l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
-                         l4_utcb_t *utcb) L4_NOTHROW
+			 l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_sched_cpu_set_t s;
   l4_msgtag_t r;
@@ -318,14 +327,14 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_info(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
-                  l4_sched_cpu_set_t *cpus) L4_NOTHROW
+		  l4_sched_cpu_set_t *cpus) L4_NOTHROW
 {
   return l4_scheduler_info_u(scheduler, cpu_max, cpus, l4_utcb());
 }
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_run_thread(l4_cap_idx_t scheduler,
-                        l4_cap_idx_t thread, l4_sched_param_t const *sp) L4_NOTHROW
+			l4_cap_idx_t thread, l4_sched_param_t const *sp) L4_NOTHROW
 {
   return l4_scheduler_run_thread_u(scheduler, thread, sp, l4_utcb());
 }
