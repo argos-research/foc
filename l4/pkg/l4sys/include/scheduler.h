@@ -126,15 +126,6 @@ l4_sched_param(unsigned prio,
                l4_cpu_time_t quantum L4_DEFAULT_PARAM(0)) L4_NOTHROW;
 
 /**
- * \brief Construct scheduler parameter by type.
- * \ingroup l4_scheduler_api
- * \author Valentin Hauner
- */
-L4_INLINE l4_sched_param_t
-l4_sched_param_by_type(l4_sched_param_type_t type, unsigned metric,
-               l4_cpu_time_t quantum L4_DEFAULT_PARAM(0)) L4_NOTHROW;
-
-/**
  * \brief Run a thread on a Scheduler.
  * \ingroup l4_scheduler_api
  *

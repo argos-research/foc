@@ -205,7 +205,7 @@ public:
     typename C::Item *_h;
   };
 
-  typedef typename Base::Iterator BaseIterator;
+  //typedef typename Base::Iterator Iterator;
   enum Pos
   { Back, Front };
 

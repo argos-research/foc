@@ -601,8 +601,8 @@ Cpu::init_errata_workarounds()
           if (rev == 0x20 || rev == 0x21 || rev == 0x22)
             set_c15_c0_1((1 << 12) | (1 << 22));
 
-          // errata: 743622
-          if ((rev & 0xf0) == 0x20)
+          // errata: 743622 (r2p0 - r2p2)
+          if ((rev & 0xf0) == 0x20 && (rev & 0xf) < 0x3)
             set_c15_c0_1(1 << 6);
 
           // errata: 751472

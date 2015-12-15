@@ -937,7 +937,7 @@ Thread::transfer_msg_items(L4_msg_tag const &tag, Thread* snd, Utcb *snd_utcb,
 
 	  if (!try_transfer_local_id(buf, sfp, rcv_word, snd, rcv))
 	    {
-	      // we need to do a real mapping¿
+	      // we need to do a real mappingÂ¿
 
 	      // diminish when sending via restricted ipc gates
 	      if (sfp.type() == L4_fpage::Obj)

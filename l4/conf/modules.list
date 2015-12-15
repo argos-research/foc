@@ -47,45 +47,6 @@ modaddr 0x01100000
 default-kernel fiasco -serial_esc
 default-bootstrap bootstrap
 
-entry dom0_server_only
-roottask moe rom/dom0_server_only.cfg
-module l4re
-module ned
-module io
-module ankh
-module dom0ClientServer
-module hello
-module ankh.vbus
-module Aw.lua
-module dom0_server_only.cfg
-module stage2ned.cfg
-
-entry dom0_server_and_client
-roottask moe rom/dom0_server_and_client.cfg
-module l4re
-module ned
-module io
-module ankh
-module dom0ClientServer
-module hello
-module test
-module ankh.vbus
-module Aw.lua
-module dom0_server_and_client.cfg
-module stage2ned.cfg
-
-entry lwip
-roottask moe rom/lwip.lua
-module l4re
-module ned
-module io
-module ankh
-module hello
-module ankh.vbus
-module Aw.lua
-module lwip.lua
-module lwip_test
-
 entry hello
 roottask moe --init=rom/hello
 module l4re
@@ -116,33 +77,6 @@ module libc_be_l4refile.so
 module libc_be_l4re.so
 module libsupc++.so
 module libuc_c.so
-
-entry simple-example
-roottask moe --init=rom/simple-example
-module l4re
-module simple-example
-
-entry mixed-example
-roottask moe --init=rom/mixed-example
-module l4re
-module mixed-example
-
-entry automotive-example
-roottask moe --init=rom/automotive-example
-module l4re
-module automotive-example
-
-entry automotive-example-lua
-roottask moe rom/automotive-example.lua
-module l4re
-module ned
-module automotive-example.lua
-module automotive-example
-
-entry ex_utcb_ipc
-roottask moe --init=rom/ex_utcb_ipc
-module l4re
-module ex_utcb_ipc
 
 entry L4Linux ARM
 roottask moe rom/l4lx.cfg

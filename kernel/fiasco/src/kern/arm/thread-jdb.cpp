@@ -67,6 +67,9 @@ extern "C" void sys_kdb_ke()
       str[sizeof(str)-1] = 0;
     }
 
+  if (x == 0)
+	  return;
+
   kdb_ke(str);
 }
 
