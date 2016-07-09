@@ -594,6 +594,11 @@ config SCHED_FP_EDF
           Choose this for the combination of the fixed priority scheduler
           and the real-time capable Earliest Deadline First (EDF) scheduler
 
+config SCHED_EDF
+	bool "Earliest Deadline First Scheduler"
+	help
+	  Choose this Scheduler for a EDF Scheduler
+
 endchoice
 
 config DISABLE_VIRT_OBJ_SPACE
