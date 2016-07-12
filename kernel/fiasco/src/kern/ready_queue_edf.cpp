@@ -1,4 +1,4 @@
-INTERFACE[sched_fp_edf]:
+INTERFACE[sched_fp_edf || sched_edf]:
 
 #include "member_offs.h"
 #include "types.h"

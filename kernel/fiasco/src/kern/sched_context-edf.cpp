@@ -21,10 +21,35 @@ class Sched_context : public Sched_context_edf<Sched_context>
 
 public:
 
-	 typedef cxx::Sd_list<Sched_context, Ready_list_item_concept> Edf_list;
+	 typedef cxx::Sd_list<Sched_context> Edf_list;
 
-	 typedef Sched_context Edf_sc;
-	 typedef Ready_queue_edf<Sched_context> Ready_queue_base;
+
+	 class Ready_queue_base : public Ready_queue_edf<Sched_context>
+	  {
+	  public:
+		Sched_context *current_sched() const { return _current_sched; }
+	    void activate(Sched_context *s)
+	    {
+	      if (!s || s->_t == Deadline)
+	      edf_rq.activate(s);
+	      _current_sched = s;
+	    }
+
+	    void ready_enqueue(Sched_context *sc)
+	    {
+	      assert_kdb(cpu_lock.test());
+
+	      // Don't enqueue threads which are already enqueued
+	      if (EXPECT_FALSE (sc->in_ready_list()))
+	        return;
+
+	      enqueue(sc, sc == current_sched());
+	    }
+
+	  private:
+	    Sched_context *_current_sched;
+	  };
+
 	 Context *context() const { return context_of(this); }
 
 
@@ -32,6 +57,7 @@ public:
 private:
 
 	 static Sched_context *edf_elem(Sched_context *x) { return x; }
+
 
 	  Sched_context **_ready_link;
 	  bool _idle:1;
@@ -42,7 +68,7 @@ private:
 	  unsigned _q;
 
 
-	  friend class Ready_queue_wfq<Sched_context>;
+	  friend class Ready_queue_edf<Sched_context>;
 
 
 };

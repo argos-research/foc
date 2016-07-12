@@ -134,7 +134,8 @@ obj_space_IMPL		:= obj_space obj_space-phys
 paging_IMPL		:= paging-sparc paging
 pic_IMPL		:= pic
 sched_context_IMPL      := sched_context-wfq sched_context-fixed_prio \
-                           sched_context-fp_wfq sched_context-fp_edf sched_context
+                           sched_context-fp_wfq sched_context-fp_edf \
+			   sched_context-edf sched_context
 space_IMPL		:= space space-sparc
 startup_IMPL		:= startup startup-sparc
 sys_call_page_IMPL	:= sys_call_page sys_call_page-sparc

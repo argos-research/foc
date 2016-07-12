@@ -92,7 +92,8 @@ INTERFACES_KERNEL	:= string_buffer mem_region simpleio kernel_console panic warn
 			   slab_cache kmem_slab dbg_page_info   \
 			   vmem_alloc paging fpu_state fpu	  \
 			   ready_queue_wfq ready_queue_fp ready_queue_edf \
-			   sched_context switch_lock timer timeout	  \
+			   sched_conext-edf sched_context switch_lock timer \
+			   timeout	  \
 			   obj_space kobject_dbg kobject kobject_iface    \
 			   l4_buf_iter lock  clock \
                            obj_space_types obj_space_phys_util \
