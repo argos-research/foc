@@ -11,7 +11,7 @@ class Sched_context : public Sched_context_edf<Sched_context>
 
 	template<typename T>
 	friend class Jdb_thread_list_policy;
-	friend class Sched_context_edf<Sched_context>;
+	//friend class Sched_context_edf<Sched_context>;
 
 	 union Sp
 	 {
@@ -20,20 +20,14 @@ class Sched_context : public Sched_context_edf<Sched_context>
 	 };
 
 public:
-
-	 typedef cxx::Sd_list<Sched_context> Edf_list;
-
+	 typedef cxx::Sd_list<Sched_context>  Edf_list;
 
 	 class Ready_queue_base : public Ready_queue_edf<Sched_context>
 	  {
 	  public:
 		Sched_context *current_sched() const { return _current_sched; }
 	    void activate(Sched_context *s)
-	    {
-	      if (!s || s->_t == Deadline)
-	      edf_rq.activate(s);
-	      _current_sched = s;
-	    }
+	    { _current_sched = s; }
 
 	    void ready_enqueue(Sched_context *sc)
 	    {
@@ -46,9 +40,14 @@ public:
 	      enqueue(sc, sc == current_sched());
 	    }
 
+	    void deblock_refill(Sched_context *sc);
+
 	  private:
 	    Sched_context *_current_sched;
 	  };
+
+
+	 void deblock_refill(Sched_context *sc);
 
 	 Context *context() const { return context_of(this); }
 
@@ -66,9 +65,6 @@ private:
 
 	  unsigned short _p;
 	  unsigned _q;
-
-
-	  friend class Ready_queue_edf<Sched_context>;
 
 
 };
@@ -109,6 +105,23 @@ Sched_context::owner() const
   return context();
 }
 
+PUBLIC inline
+Mword
+Sched_context::in_ready_list() const
+{
+  return Edf_list::in_list(this);
+}
+
+/*
+IMPLEMENT inline
+void
+Sched_context::deblock_refill(Sched_context *sc)
+{
+    deblock_refill(sc);
+}
+*/
+PUBLIC
+int
 Sched_context::set(L4_sched_param const *_p)
 {
 	Sp const *p = reinterpret_cast<Sp const *>(_p);
@@ -129,3 +142,8 @@ Sched_context::set(L4_sched_param const *_p)
 
 	return 0;
 }
+
+PUBLIC inline
+bool
+Sched_context::dominates(Sched_context *sc)
+{ return deadline() < sc->deadline(); }

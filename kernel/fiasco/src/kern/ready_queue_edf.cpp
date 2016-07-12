@@ -43,7 +43,9 @@ private:
 
   E *_current_sched;
 
+#ifdef sched_fp_edf
   static typename E::Edf_sc *_e(E *e) { return E::edf_elem(e); }
+#endif
 };
 
 template< typename IMPL >
