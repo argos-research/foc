@@ -11,7 +11,6 @@ class Sched_context : public Sched_context_edf<Sched_context>
 
 	template<typename T>
 	friend class Jdb_thread_list_policy;
-	//friend class Sched_context_edf<Sched_context>;
 
 	 union Sp
 	 {
@@ -20,7 +19,8 @@ class Sched_context : public Sched_context_edf<Sched_context>
 	 };
 
 public:
-	 typedef cxx::Sd_list<Sched_context>  Edf_list;
+
+	 typedef cxx::Sd_list<Sched_context> Edf_list;
 
 	 class Ready_queue_base : public Ready_queue_edf<Sched_context>
 	  {
@@ -41,13 +41,14 @@ public:
 	    }
 
 	    void deblock_refill(Sched_context *sc);
+	    void requeue(Sched_context *sc);
 
 	  private:
 	    Sched_context *_current_sched;
 	  };
 
 
-	 void deblock_refill(Sched_context *sc);
+	 //void deblock_refill(Sched_context *sc);
 
 	 Context *context() const { return context_of(this); }
 
@@ -109,7 +110,8 @@ PUBLIC inline
 Mword
 Sched_context::in_ready_list() const
 {
-  return Edf_list::in_list(this);
+  //return Edf_list::in_list(this);
+	return _ready_link != 0;
 }
 
 /*
@@ -146,4 +148,15 @@ Sched_context::set(L4_sched_param const *_p)
 PUBLIC inline
 bool
 Sched_context::dominates(Sched_context *sc)
-{ return deadline() < sc->deadline(); }
+{
+	return deadline() < sc->deadline();
+}
+
+PUBLIC inline
+void
+Sched_context::replenish()
+{
+  _left = _q;
+}
+
+
