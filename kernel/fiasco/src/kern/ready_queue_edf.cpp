@@ -3,6 +3,7 @@ INTERFACE[sched_fp_edf || sched_edf]:
 #include "member_offs.h"
 #include "types.h"
 #include "globals.h"
+#include <cxx/dlist>
 
 #define ANSI_BOLD          "\x1b[1m"
 #define ANSI_BOLD_RESET    "\x1b[0m"
@@ -28,8 +29,18 @@ public:
   void set_idle(E *sc)
   {
     idle = sc;
+
+#ifdef sched_fp_edf
     _e(sc)->_ready_link = &idle;
     _e(sc)->_idle = 1;
+#endif
+
+#ifdef sched_edf
+    ready_link = &idle;
+    _idle = 1;
+#endif
+
+
   }
 
   void enqueue(E *, bool is_current);
@@ -46,6 +57,7 @@ private:
 #ifdef sched_fp_edf
   static typename E::Edf_sc *_e(E *e) { return E::edf_elem(e); }
 #endif
+
 };
 
 template< typename IMPL >
@@ -65,7 +77,7 @@ private:
 
 
 // --------------------------------------------------------------------------
-IMPLEMENTATION [sched_fp_edf]:
+IMPLEMENTATION [sched_fp_edf || sched_edf]:
 
 #include <cassert>
 #include "config.h"
@@ -76,6 +88,7 @@ IMPLEMENTATION [sched_fp_edf]:
 #include "kobject_dbg.h"
 #include "debug_output.h"
 
+
 IMPLEMENT inline
 template<typename E>
 E *
@@ -83,16 +96,26 @@ Ready_queue_edf<E>::next_to_run() const
 {
   if (count)
     return rq.front();
-
+#ifdef sched_fp_edf
   if (_current_sched)
     _e(idle)->_dl = _e(_current_sched)->_dl;
 
   return idle;
+#endif
+
+#ifdef sched_edf
+  if (_current_sched)
+      idle = _dl;
+
+    return idle;
+#endif
 }
+
 
 /**
  * Enqueues context in ready-list
  */
+
 IMPLEMENT
 template<typename E>
 void
@@ -104,7 +127,13 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
   if (EXPECT_FALSE (i->in_ready_list()))
     return;
 
+#ifdef sched_fp_edf
   _e(i)->_ready_link = &i;
+#endif
+
+#ifdef sched_edf
+  _ready_link = &i;
+#endif
 
   // Insert new Sched_context at the right position,
   // e.g. keep ascending order of the queue from short to large deadlines
@@ -160,6 +189,9 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
   dbgprintf("end\n" ANSI_BOLD_RESET);
 }
 
+
+
+
 /**
  * Removes context from ready-list
  */
@@ -175,7 +207,15 @@ Ready_queue_edf<E>::dequeue(E *i)
     return;
 
   rq.remove(i);
+
+#ifdef sched_fp_edf
   _e(i)->_ready_link = 0;
+#endif
+
+#ifdef sched_edf
+  _ready_link = 0;
+#endif
+
   count--;
   typename List::BaseIterator it;
   if (count)
@@ -218,5 +258,13 @@ void
 Ready_queue_edf<E>::deblock_refill(E *sc)
 {
   dbgprintf("Got deblock_refill call for id:%lx\n", Kobject_dbg::obj_to_id(sc->context()));
+
+#ifdef sched_fp_edf
   _e(sc)->_left = _e(sc)->_q;
+#endif
+
+#ifdef sched_edf
+  _left = _q;
+#endif
+
 }

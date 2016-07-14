@@ -18,13 +18,17 @@ class Sched_context : public Sched_context_edf<Sched_context>
 	    L4_sched_param_deadline deadline;
 	 };
 
+
 public:
+
 
 	 typedef cxx::Sd_list<Sched_context> Edf_list;
 
 	 class Ready_queue_base : public Ready_queue_edf<Sched_context>
 	  {
 	  public:
+		Ready_queue_edf<Sched_context> edf_rq;
+
 		Sched_context *current_sched() const { return _current_sched; }
 	    void activate(Sched_context *s)
 	    { _current_sched = s; }
@@ -58,15 +62,15 @@ private:
 
 	 static Sched_context *edf_elem(Sched_context *x) { return x; }
 
+     // CRUCIAL: _ready_link must have the same memory location as _ready_next from Fp_sc for in_ready_list()
+     Sched_context **_ready_link;
+     bool _idle:1;
+     unsigned _dl;
 
-	  Sched_context **_ready_link;
-	  bool _idle:1;
-	  Unsigned64 _dl;
 	  Unsigned64 _left;
 
 	  unsigned short _p;
 	  unsigned _q;
-
 
 };
 
@@ -86,7 +90,7 @@ Sched_context::Sched_context()
 {
 	dbgprintf("[Sched_context] Created Sched_context object with type:Deadline\n");
 	_p = 0;
-	_dl = metric;
+	_dl = Config::Default_deadline;
 	_q = Config::Default_time_slice;
 	_left = Config::Default_time_slice;
 	_ready_link = 0;
@@ -127,20 +131,18 @@ int
 Sched_context::set(L4_sched_param const *_p)
 {
 	Sp const *p = reinterpret_cast<Sp const *>(_p);
-	if (p->p.sched_class != L4_sched_param_deadline)
+
+	if (p->deadline.deadline == 0)
 		return -L4_err::EInval;
-	{
-		if (p->deadline.deadline == 0)
-			return -L4_err::EInval;
 
-		dbgprintf("[Sched_context::set] Set type to Deadline (id:%lx, dl:%ld)\n",
-				 Kobject_dbg::obj_to_id(this->context()),
-				 p->deadline.deadline);
-		_p = 0;
-		_dl = p->deadline.deadline;
-		_q = Config::Default_time_slice;
+	dbgprintf("[Sched_context::set] Set type to Deadline (id:%lx, dl:%ld)\n",
+			 Kobject_dbg::obj_to_id(this->context()),
+			 p->deadline.deadline);
+	_p = 0;
+	_dl = p->deadline.deadline;
+	_q = Config::Default_time_slice;
 
-	}
+
 
 	return 0;
 }
@@ -157,6 +159,22 @@ void
 Sched_context::replenish()
 {
   _left = _q;
+}
+PUBLIC static inline
+unsigned
+Sched_context::prio()
+{
+	return 0;
+}
+
+/**
+ * Return remaining time quantum of Sched_context
+ */
+PUBLIC inline
+Unsigned64
+Sched_context::left() const
+{
+  return _left;
 }
 
 
