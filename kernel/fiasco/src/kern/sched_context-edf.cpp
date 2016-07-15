@@ -33,6 +33,7 @@ public:
 	    void activate(Sched_context *s)
 	    { _current_sched = s; }
 
+/*
 	    void ready_enqueue(Sched_context *sc)
 	    {
 	      assert_kdb(cpu_lock.test());
@@ -41,11 +42,13 @@ public:
 	      if (EXPECT_FALSE (sc->in_ready_list()))
 	        return;
 
-	      enqueue(sc, sc == current_sched());
+	      enqueue(sc, (sc == current_sched()));
 	    }
-
+*/
+	    void enqueue(Sched_context *sc, bool is_current);
 	    void deblock_refill(Sched_context *sc);
 	    void requeue(Sched_context *sc);
+	    void dequeue(Sched_context *);
 
 	  private:
 	    Sched_context *_current_sched;
@@ -165,6 +168,14 @@ Sched_context::prio()
 {
 	return 0;
 }
+
+PUBLIC inline
+void
+Sched_context::set_left(Unsigned64 l)
+{
+  _left = l;
+}
+
 
 /**
  * Return remaining time quantum of Sched_context
