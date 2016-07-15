@@ -30,16 +30,8 @@ public:
   {
     idle = sc;
 
-#ifdef sched_fp_edf
     _e(sc)->_ready_link = &idle;
     _e(sc)->_idle = 1;
-#endif
-
-#ifdef sched_edf
-    ready_link = &idle;
-    _idle = 1;
-#endif
-
 
   }
 
@@ -54,9 +46,7 @@ private:
 
   E *_current_sched;
 
-#ifdef sched_fp_edf
   static typename E::Edf_sc *_e(E *e) { return E::edf_elem(e); }
-#endif
 
 };
 
@@ -96,19 +86,10 @@ Ready_queue_edf<E>::next_to_run() const
 {
   if (count)
     return rq.front();
-#ifdef sched_fp_edf
   if (_current_sched)
     _e(idle)->_dl = _e(_current_sched)->_dl;
 
   return idle;
-#endif
-
-#ifdef sched_edf
-  if (_current_sched)
-      idle = _dl;
-
-    return idle;
-#endif
 }
 
 
@@ -119,7 +100,7 @@ Ready_queue_edf<E>::next_to_run() const
 IMPLEMENT
 template<typename E>
 void
-Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
+Ready_queue_edf<E>::enqueue(E *i, bool is_current_sched)
 {
   assert_kdb(cpu_lock.test());
 
@@ -127,13 +108,7 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
   if (EXPECT_FALSE (i->in_ready_list()))
     return;
 
-#ifdef sched_fp_edf
   _e(i)->_ready_link = &i;
-#endif
-
-#ifdef sched_edf
-  _ready_link = &i;
-#endif
 
   // Insert new Sched_context at the right position,
   // e.g. keep ascending order of the queue from short to large deadlines
@@ -208,13 +183,7 @@ Ready_queue_edf<E>::dequeue(E *i)
 
   rq.remove(i);
 
-#ifdef sched_fp_edf
   _e(i)->_ready_link = 0;
-#endif
-
-#ifdef sched_edf
-  _ready_link = 0;
-#endif
 
   count--;
   typename List::BaseIterator it;
@@ -259,12 +228,6 @@ Ready_queue_edf<E>::deblock_refill(E *sc)
 {
   dbgprintf("Got deblock_refill call for id:%lx\n", Kobject_dbg::obj_to_id(sc->context()));
 
-#ifdef sched_fp_edf
   _e(sc)->_left = _e(sc)->_q;
-#endif
-
-#ifdef sched_edf
-  _left = _q;
-#endif
 
 }

@@ -20,7 +20,7 @@ class Sched_context : public Sched_context_edf<Sched_context>
 
 
 public:
-
+	typedef Sched_context Edf_sc;
 
 	 typedef cxx::Sd_list<Sched_context> Edf_list;
 
@@ -55,7 +55,6 @@ public:
 	 //void deblock_refill(Sched_context *sc);
 
 	 Context *context() const { return context_of(this); }
-
 
 
 private:
