@@ -4,6 +4,7 @@ INTERFACE[sched_fp_edf || sched_edf]:
 #include "types.h"
 #include "globals.h"
 #include <cxx/dlist>
+#include "config.h"
 
 #define ANSI_BOLD          "\x1b[1m"
 #define ANSI_BOLD_RESET    "\x1b[0m"
