@@ -6,7 +6,7 @@ INTERFACE [sched_edf]:
 #include "types.h"
 #include "globals.h"
 
-class Sched_context : public Sched_context_edf<Sched_context>
+class Sched_context : public cxx::D_list_item //public Sched_context_edf<Sched_context>
 {
 	MEMBER_OFFSET();
 	friend class Jdb_list_timeouts;
@@ -55,7 +55,7 @@ public:
 //	    }
 	    void deblock_refill(Sched_context *sc);
 	    void requeue(Sched_context *sc);
-	    void dequeue(Sched_context *);
+	    void dequeue(Sched_context *sc);
 
 	  private:
 	    Sched_context *_current_sched;
@@ -132,8 +132,44 @@ IMPLEMENT inline
 void
 Sched_context::Ready_queue_base::deblock_refill(Sched_context *sc)
 {
-    deblock_refill(sc);
+    edf_rq.deblock_refill(sc);
 }
+
+/**
+ * Enqueues the Sched_context object in the corresponding ready-list
+ */
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::enqueue(Sched_context *sc, bool is_current)
+{
+    dbgprintf("[Sched_context::enqueue] Enqueuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
+               Kobject_dbg::obj_to_id(sc->context()),
+               sc->deadline());
+    edf_rq.enqueue(sc, is_current);
+}
+
+/**
+ * Removes the Sched_context object from the corresponding ready-list
+ */
+IMPLEMENT inline
+void
+Sched_context::Ready_queue_base::dequeue(Sched_context *sc)
+{
+	dbgprintf("[Sched_context::dequeue] Dequeuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
+			  Kobject_dbg::obj_to_id(sc->context()),
+			  sc->deadline());
+	edf_rq.dequeue(sc);
+}
+
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::requeue(Sched_context *sc)
+{
+	edf_rq.requeue(sc);
+}
+
 
 PUBLIC
 int
