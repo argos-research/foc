@@ -30,10 +30,8 @@ public:
   void set_idle(E *sc)
   {
     idle = sc;
-
     _e(sc)->_ready_link = &idle;
     _e(sc)->_idle = 1;
-
   }
 
   void enqueue(E *, bool is_current);
@@ -48,7 +46,6 @@ private:
   E *_current_sched;
 
   static typename E::Edf_sc *_e(E *e) { return E::edf_elem(e); }
-
 };
 
 template< typename IMPL >
@@ -79,7 +76,6 @@ IMPLEMENTATION [sched_fp_edf || sched_edf]:
 #include "kobject_dbg.h"
 #include "debug_output.h"
 
-
 IMPLEMENT inline
 template<typename E>
 E *
@@ -93,11 +89,9 @@ Ready_queue_edf<E>::next_to_run() const
   return idle;
 }
 
-
 /**
  * Enqueues context in ready-list
  */
-
 IMPLEMENT
 template<typename E>
 void
@@ -165,9 +159,6 @@ Ready_queue_edf<E>::enqueue(E *i, bool is_current_sched)
   dbgprintf("end\n" ANSI_BOLD_RESET);
 }
 
-
-
-
 /**
  * Removes context from ready-list
  */
@@ -183,9 +174,7 @@ Ready_queue_edf<E>::dequeue(E *i)
     return;
 
   rq.remove(i);
-
   _e(i)->_ready_link = 0;
-
   count--;
   typename List::BaseIterator it;
   if (count)
@@ -228,7 +217,5 @@ void
 Ready_queue_edf<E>::deblock_refill(E *sc)
 {
   dbgprintf("Got deblock_refill call for id:%lx\n", Kobject_dbg::obj_to_id(sc->context()));
-
   _e(sc)->_left = _e(sc)->_q;
-
 }

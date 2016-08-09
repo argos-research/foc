@@ -1,6 +1,10 @@
 INTERFACE [sched_edf]:
 
 #include "ready_queue_edf.h"
+#include <cxx/dlist>
+#include "member_offs.h"
+#include "types.h"
+#include "globals.h"
 
 class Sched_context : public Sched_context_edf<Sched_context>
 {
@@ -46,6 +50,9 @@ public:
 	    }
 */
 	    void enqueue(Sched_context *sc, bool is_current);
+//	    {
+//	    	 edf_rq.enqueue(sc, is_current);
+//	    }
 	    void deblock_refill(Sched_context *sc);
 	    void requeue(Sched_context *sc);
 	    void dequeue(Sched_context *);
@@ -62,17 +69,17 @@ public:
 
 private:
 
-	 static Sched_context *edf_elem(Sched_context *x) { return x; }
+	static Sched_context *edf_elem(Sched_context *x) { return x; }
 
-     // CRUCIAL: _ready_link must have the same memory location as _ready_next from Fp_sc for in_ready_list()
-     Sched_context **_ready_link;
-     bool _idle:1;
-     unsigned _dl;
+	// CRUCIAL: _ready_link must have the same memory location as _ready_next from Fp_sc for in_ready_list()
+	Sched_context **_ready_link;
+	bool _idle:1;
+	unsigned _dl;
 
-	  Unsigned64 _left;
+	Unsigned64 _left;
 
-	  unsigned short _p;
-	  unsigned _q;
+	unsigned short _p;
+	unsigned _q;
 
 };
 
@@ -120,14 +127,14 @@ Sched_context::in_ready_list() const
 	return _ready_link != 0;
 }
 
-/*
+
 IMPLEMENT inline
 void
-Sched_context::deblock_refill(Sched_context *sc)
+Sched_context::Ready_queue_base::deblock_refill(Sched_context *sc)
 {
     deblock_refill(sc);
 }
-*/
+
 PUBLIC
 int
 Sched_context::set(L4_sched_param const *_p)
