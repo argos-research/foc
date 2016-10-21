@@ -50,9 +50,6 @@ public:
 	    }
 */
 	    void enqueue(Sched_context *sc, bool is_current);
-//	    {
-//	    	 edf_rq.enqueue(sc, is_current);
-//	    }
 	    void deblock_refill(Sched_context *sc);
 	    void requeue(Sched_context *sc);
 	    void dequeue(Sched_context *sc);
@@ -60,9 +57,6 @@ public:
 	  private:
 	    Sched_context *_current_sched;
 	  };
-
-
-	 //void deblock_refill(Sched_context *sc);
 
 	 Context *context() const { return context_of(this); }
 
@@ -162,14 +156,12 @@ Sched_context::Ready_queue_base::dequeue(Sched_context *sc)
 	edf_rq.dequeue(sc);
 }
 
-
 IMPLEMENT
 void
 Sched_context::Ready_queue_base::requeue(Sched_context *sc)
 {
 	edf_rq.requeue(sc);
 }
-
 
 PUBLIC
 int

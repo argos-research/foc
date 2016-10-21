@@ -95,7 +95,7 @@ Ready_queue_edf<E>::next_to_run() const
 IMPLEMENT
 template<typename E>
 void
-Ready_queue_edf<E>::enqueue(E *i, bool is_current_sched)
+Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
 {
   assert_kdb(cpu_lock.test());
 
@@ -175,6 +175,9 @@ Ready_queue_edf<E>::dequeue(E *i)
 
   rq.remove(i);
   _e(i)->_ready_link = 0;
+
+  if (count==0)
+	  return;
   count--;
   typename List::BaseIterator it;
   if (count)
