@@ -125,7 +125,6 @@ IMPLEMENTATION [sched_fp_edf]:
 PUBLIC
 Sched_context::Sched_context()
 {
-  dbgprintf("[Sched_context] Created default Sched_context object with type:Fixed_prio\n");
   _t = Fixed_prio;
   _sc.fp._p = Config::Default_prio;
   _sc.fp._q = Config::Default_time_slice;
@@ -141,7 +140,6 @@ Sched_context::Sched_context(Sc_type type, unsigned metric)
 {
   if (type == Fixed_prio)
   {
-    dbgprintf("[Sched_context] Created Sched_context object with type:Fixed_prio\n");
     _t = Fixed_prio;
     _sc.fp._p = metric;
     _sc.fp._q = Config::Default_time_slice;
@@ -150,7 +148,6 @@ Sched_context::Sched_context(Sc_type type, unsigned metric)
   }
   else
   {
-    dbgprintf("[Sched_context] Created Sched_context object with type:Deadline\n");
     _t = Deadline;
     _sc.edf._p = 0;
     _sc.edf._dl = metric;
@@ -237,9 +234,6 @@ Sched_context::set(L4_sched_param const *_p)
   if (p->p.sched_class >= 0)
   {
     // Legacy Fixed_prio
-    dbgprintf("[Sched_context::set] Set type to legacy Fixed_prio (id:%lx, prio:%ld)\n",
-               Kobject_dbg::obj_to_id(this->context()),
-               p->p.sched_class);
     _t = Fixed_prio;
     _sc.fp._p = p->legacy_fixed_prio.prio;
     if (p->legacy_fixed_prio.prio > 255)
@@ -256,9 +250,6 @@ Sched_context::set(L4_sched_param const *_p)
   switch (p->p.sched_class)
   {
     case L4_sched_param_fixed_prio::Class:
-      dbgprintf("[Sched_context::set] Set type to Fixed_prio (id:%lx, prio:%ld)\n",
-                 Kobject_dbg::obj_to_id(this->context()),
-                 p->fixed_prio.prio);
       _t = Fixed_prio;
 
       _sc.fp._p = p->fixed_prio.prio;
@@ -275,9 +266,6 @@ Sched_context::set(L4_sched_param const *_p)
     case L4_sched_param_deadline::Class:
       if (p->deadline.deadline == 0)
         return -L4_err::EInval;
-      dbgprintf("[Sched_context::set] Set type to Deadline (id:%lx, dl:%ld)\n",
-                 Kobject_dbg::obj_to_id(this->context()),
-                 p->deadline.deadline);
       _t = Deadline;
       _sc.edf._p = 0;
       _sc.edf._dl = p->deadline.deadline;
@@ -322,9 +310,6 @@ Sched_context::Ready_queue_base::enqueue(Sched_context *sc, bool is_current)
     fp_rq.enqueue(sc, is_current);
   else
   {
-    dbgprintf("[Sched_context::enqueue] Enqueuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
-               Kobject_dbg::obj_to_id(sc->context()),
-               sc->deadline());
     edf_rq.enqueue(sc, is_current);
   }
 }
@@ -339,9 +324,6 @@ Sched_context::Ready_queue_base::dequeue(Sched_context *sc)
   if (sc->_t == Fixed_prio)
     fp_rq.dequeue(sc);
   else
-    dbgprintf("[Sched_context::dequeue] Dequeuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
-              Kobject_dbg::obj_to_id(sc->context()),
-              sc->deadline());
     edf_rq.dequeue(sc);
 }
 

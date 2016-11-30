@@ -83,6 +83,7 @@ Ready_queue_edf<E>::next_to_run() const
 {
   if (count)
     return rq.front();
+
   if (_current_sched)
     _e(idle)->_dl = _e(_current_sched)->_dl;
 
