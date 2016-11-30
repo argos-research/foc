@@ -52,7 +52,7 @@ Scheduler::Scheduler() : _irq(0)
 
 PRIVATE
 L4_msg_tag
-Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *utcb)
+Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *outcb)
 {
   L4_msg_tag const tag = f->tag();
   Cpu_number const curr_cpu = current_cpu();
@@ -135,6 +135,8 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *utcb)
            cxx::int_value<Order>(sched_param->cpus.granularity()));
 
   thread->migrate(&info);
+
+  outcb->values[7] = thread->dbg_id();
 
   return commit_result(0);
 }
@@ -259,7 +261,7 @@ Scheduler::kinvoke(L4_obj_ref ref, L4_fpage::Rights rights, Syscall_frame *f,
   switch (iutcb->values[0])
     {
     case Info:       return sys_info(rights, f, iutcb, outcb);
-    case Run_thread: return sys_run(rights, f, iutcb);
+    case Run_thread: return sys_run(rights, f, iutcb, outcb);
     case Idle_time:  return sys_idle_time(rights, f, outcb);
     default:         return commit_result(-L4_err::ENosys);
     }
