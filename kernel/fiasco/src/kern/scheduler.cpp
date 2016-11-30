@@ -60,7 +60,7 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
   Obj_space *s = current()->space();
   assert(s);
 
-  L4_snd_item_iter snd_items(utcb, tag.words());
+  L4_snd_item_iter snd_items(iutcb, tag.words());
 
   if (EXPECT_FALSE(tag.words() < 5))
     return commit_result(-L4_err::EInval);
@@ -68,7 +68,7 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
   unsigned long sz = sizeof (L4_sched_param_legacy);
 
     {
-      L4_sched_param const *sched_param = reinterpret_cast<L4_sched_param const*>(&utcb->values[1]);
+      L4_sched_param const *sched_param = reinterpret_cast<L4_sched_param const*>(&iutcb->values[1]);
       if (sched_param->sched_class < 0)
         sz = sched_param->length;
 
@@ -92,7 +92,7 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
 
 
   Mword _store[sz];
-  memcpy(_store, &utcb->values[1], sz * sizeof(Mword));
+  memcpy(_store, &iutcb->values[1], sz * sizeof(Mword));
 
   L4_sched_param const *sched_param = reinterpret_cast<L4_sched_param const *>(_store);
 
@@ -109,13 +109,13 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
 
   /* Own work */
 #ifdef CONFIG_SCHED_FP_EDF
-  if (utcb->values[5] > 0)
+  if (iutcb->values[5] > 0)
   {
     // Some deadline has been passed, so our thread becomes a deadline-based thread
-    dbgprintf("[Scheduler::sys_run] Deadline passed for id:%lx is: %lu\n", thread->dbg_id(), utcb->values[5]);
+    dbgprintf("[Scheduler::sys_run] Deadline passed for id:%lx is: %lu\n", thread->dbg_id(), iutcb->values[5]);
     L4_sched_param_deadline sched_p;
     sched_p.sched_class     = -3;
-    sched_p.deadline        = utcb->values[5];
+    sched_p.deadline        = iutcb->values[5];
     thread->sched_context()->set(static_cast<L4_sched_param*>(&sched_p));
   }
   else
@@ -130,7 +130,7 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
     printf("CPU[%u]: run(thread=%lx, cpu=%u (%lx,%u,%u)\n",
            cxx::int_value<Cpu_number>(curr_cpu), thread->dbg_id(),
            cxx::int_value<Cpu_number>(info.cpu),
-           utcb->values[2],
+           iutcb->values[2],
            cxx::int_value<Cpu_number>(sched_param->cpus.offset()),
            cxx::int_value<Order>(sched_param->cpus.granularity()));
 
