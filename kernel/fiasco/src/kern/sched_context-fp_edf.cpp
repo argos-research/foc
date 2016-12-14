@@ -93,6 +93,9 @@ public:
     void dequeue(Sched_context *);
     void requeue(Sched_context *sc);
 
+    bool empty(unsigned);  //gmc
+    bool switch_rq(Fp_list *list, unsigned prio); //gmc
+
     void set_idle(Sched_context *sc)
     { sc->_t = Deadline; sc->_sc.edf._p = 0; edf_rq.set_idle(sc); }
 
@@ -335,6 +338,23 @@ Sched_context::Ready_queue_base::requeue(Sched_context *sc)
     fp_rq.requeue(sc);
   else
     edf_rq.requeue(sc);
+}
+
+IMPLEMENT
+bool
+Sched_context::Ready_queue_base::empty(unsigned prio) //gmc
+{
+  //if (sc->_t == Fixed_prio)
+    return fp_rq.empty(prio);
+//  else
+//    edf_rq.requeue(sc);
+}
+
+IMPLEMENT
+bool
+Sched_context::Ready_queue_base::switch_rq(Fp_list *list, unsigned prio) //gmc
+{
+	return fp_rq.switch_rq(list, prio);
 }
 
 PUBLIC inline

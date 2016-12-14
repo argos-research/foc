@@ -47,6 +47,16 @@ public:
       enqueue(to, false);
     }
 
+    bool ready_empty(unsigned prio) //gmc
+    {
+  	  return empty(prio);
+    }
+
+    bool switch_ready_queue(Fp_list *list, unsigned prio) //gmc
+    {
+    	return switch_rq(list, prio);
+    }
+
     Context *schedule_in_progress;
   };
 
@@ -60,6 +70,9 @@ IMPLEMENTATION:
 #include "timeout.h"
 #include "globals.h"
 #include "logdefs.h"
+
+#include "kobject_dbg.h"
+#include "debug_output.h"
 
 DEFINE_PER_CPU Per_cpu<Sched_context::Ready_queue> Sched_context::rq;
 

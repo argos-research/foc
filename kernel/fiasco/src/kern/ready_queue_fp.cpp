@@ -6,6 +6,12 @@ INTERFACE [sched_fixed_prio || sched_fp_wfq || sched_fp_edf]:
 #include "types.h"
 #include "globals.h"
 
+#include "cpu_lock.h"
+#include "kdb_ke.h"
+#include "std_macros.h"
+
+#include "kobject_dbg.h"
+#include "debug_output.h"
 
 struct L4_sched_param_fixed_prio : public L4_sched_param
 {
@@ -26,6 +32,7 @@ private:
   unsigned prio_highest;
   List prio_next[256];
 
+
 public:
   void set_idle(E *sc)
   { sc->_prio = Config::Kernel_prio; }
@@ -33,6 +40,22 @@ public:
   void enqueue(E *, bool);
   void dequeue(E *);
   E *next_to_run() const;
+  bool empty(unsigned prio) {return prio_next[prio].empty();}
+  bool switch_rq(List *list, unsigned prio) {
+  		assert_kdb(cpu_lock.test());
+
+  		prio_next[prio].exchange(list);
+
+  		typename List::BaseIterator it = List::iter(prio_next[prio].front());
+  		dbgprintf("After exchange fp_rq: ");
+  		do
+  		{
+  			dbgprintf("%lx => ",Kobject_dbg::obj_to_id(it->context()));
+  		}while (++it != List::iter(prio_next[prio].front()));
+  		dbgprintf("end\n");
+
+  		return true;
+  	}
 };
 
 
@@ -45,6 +68,8 @@ IMPLEMENTATION [sched_fixed_prio || sched_fp_wfq || sched_fp_edf]:
 #include "std_macros.h"
 #include "config.h"
 
+#include "kobject_dbg.h"
+#include "debug_output.h"
 
 IMPLEMENT inline
 template<typename E>
@@ -72,6 +97,7 @@ Ready_queue_fp<E>::enqueue(E *i, bool is_current_sched)
     prio_highest = prio;
 
   prio_next[prio].push(i, is_current_sched ? List::Front : List::Back);
+
 }
 
 /**

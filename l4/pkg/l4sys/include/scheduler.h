@@ -33,6 +33,14 @@
  * <c>\#include <l4/sys/scheduler.h></c>
  */
 
+//gmc
+typedef struct l4_sched_thread_list
+{
+	l4_cap_idx_t list[10];
+	unsigned prio[10];
+	int n;
+}l4_sched_thread_list;
+
 /**
  * \brief CPU sets.
  * \ingroup l4_scheduler_api
@@ -155,6 +163,29 @@ L4_INLINE l4_msgtag_t
 l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
 			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW;
 
+//gmc
+/**
+ * \brief Deploy a thread on a running queue.
+ * \ingroup l4_scheduler_api
+ *
+ * \param scheduler  Scheduler object.
+ * \param thread Thread to run.
+ * \param sp Scheduling parameters.
+ *
+ * \return 0 on success, <0 error code otherwise.
+ */
+L4_INLINE l4_msgtag_t
+l4_scheduler_deploy_thread(l4_cap_idx_t scheduler,
+		l4_sched_thread_list thread, l4_sched_param_t const *sp) L4_NOTHROW;
+
+/**
+ * \internal
+ */
+L4_INLINE l4_msgtag_t
+l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, l4_sched_thread_list thread,
+			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW;
+
+
 /**
  * \brief Query idle time of a CPU, in µs.
  * \ingroup l4_scheduler_api
@@ -208,6 +239,7 @@ enum L4_scheduler_ops
   L4_SCHEDULER_INFO_OP       = 0UL, /**< Query infos about the scheduler */
   L4_SCHEDULER_RUN_THREAD_OP = 1UL, /**< Run a thread on this scheduler */
   L4_SCHEDULER_IDLE_TIME_OP  = 2UL, /**< Query idle time for the scheduler */
+  L4_SCHEDULER_DEPLOY_THREAD_OP  = 3UL, /**< Query idle time for the scheduler */
 };
 
 /*************** Implementations *******************/
@@ -298,6 +330,28 @@ l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
 }
 
 L4_INLINE l4_msgtag_t
+l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, l4_sched_thread_list thread,
+			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW
+{
+  l4_msg_regs_t *m = l4_utcb_mr_u(utcb);
+  m->mr[0] = L4_SCHEDULER_DEPLOY_THREAD_OP;
+  m->mr[1] = (sp->affinity.granularity << 24) | sp->affinity.offset;
+  m->mr[2] = sp->affinity.map;
+  m->mr[3] = sp->prio;
+  m->mr[4] = sp->quantum;
+  m->mr[5] = sp->deadline; /* Own work */
+  m->mr[6] = l4_map_obj_control(0, 0);
+
+  for(int i = 0; i < thread.n; i++){
+	  m->mr[i+7] = l4_obj_fpage(thread.list[i], 0, L4_FPAGE_RWX).raw;
+  }
+
+  // The second argument of the message tag (here: literal 6) denotes how many message registers to transfer
+  // The third argument of the message tag (here: literal 1) denotes which thread to schedule
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, thread.n+5, 1, 0), L4_IPC_NEVER);
+}
+
+L4_INLINE l4_msgtag_t
 l4_scheduler_idle_time_u(l4_cap_idx_t scheduler, l4_sched_cpu_set_t const *cpus,
 			 l4_utcb_t *utcb) L4_NOTHROW
 {
@@ -337,6 +391,13 @@ l4_scheduler_run_thread(l4_cap_idx_t scheduler,
 			l4_cap_idx_t thread, l4_sched_param_t const *sp) L4_NOTHROW
 {
   return l4_scheduler_run_thread_u(scheduler, thread, sp, l4_utcb());
+}
+
+L4_INLINE l4_msgtag_t
+l4_scheduler_deploy_thread(l4_cap_idx_t scheduler,
+		l4_sched_thread_list thread, l4_sched_param_t const *sp) L4_NOTHROW
+{
+  return l4_scheduler_deploy_thread_u(scheduler, thread, sp, l4_utcb());
 }
 
 L4_INLINE l4_msgtag_t
