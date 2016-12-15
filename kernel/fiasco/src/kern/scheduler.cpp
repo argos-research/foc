@@ -104,9 +104,6 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
   if (!thread)
     return commit_result(-L4_err::EInval);
 
-	Mword _store[sz];
-	memcpy(_store, &utcb->values[1], sz * sizeof(Mword));
-
   Mword _store[sz];
   memcpy(_store, &iutcb->values[1], sz * sizeof(Mword));
      L4_sched_param const *sched_param = reinterpret_cast<L4_sched_param const *>(_store);
