@@ -56,6 +56,30 @@ public:
 
   		return true;
   	}
+   void _get_rqs(int* info) {
+	int elem_counter=1;
+	for(int j=0; j<256; j++) {
+			int pos=1;
+			typename List::BaseIterator it = List::iter(prio_next[j].front());
+			if(Kobject_dbg::obj_to_id(it->context())<1000) {
+  			//dbgprintf("Prio list: %d ",j);
+  			do
+  			{
+  				//dbgprintf("%d",Kobject_dbg::obj_to_id(it->context()));
+				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
+				info[2*elem_counter]=pos;
+				//dbgprintf("Pos RQ:%d\n", pos);
+				pos++;
+				elem_counter++;
+				++it;
+  			}while (it != List::iter(prio_next[j].front()));
+			//dbgprintf("\n");
+			}
+		}
+	info[0]=elem_counter-1;
+	//dbgprintf("%d objects\n", info[0]);
+	//return prios;
+   }
 };
 
 

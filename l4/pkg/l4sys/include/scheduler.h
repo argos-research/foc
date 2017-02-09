@@ -227,6 +227,12 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 			 l4_utcb_t *utcb) L4_NOTHROW;
 
 
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW;
+
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
+
 
 /**
  * \brief Operations on the Scheduler object.
@@ -240,6 +246,7 @@ enum L4_scheduler_ops
   L4_SCHEDULER_RUN_THREAD_OP = 1UL, /**< Run a thread on this scheduler */
   L4_SCHEDULER_IDLE_TIME_OP  = 2UL, /**< Query idle time for the scheduler */
   L4_SCHEDULER_DEPLOY_THREAD_OP  = 3UL, /**< Query idle time for the scheduler */
+  L4_GET_RQS = 4UL,
 };
 
 /*************** Implementations *******************/
@@ -378,6 +385,14 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
   return s.map & 1;
 }
 
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
+{
+  l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
+  v->mr[0] = L4_GET_RQS;
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 1, 0, 0), L4_IPC_NEVER); 
+}
+
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_info(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
@@ -410,4 +425,10 @@ L4_INLINE int
 l4_scheduler_is_online(l4_cap_idx_t scheduler, l4_umword_t cpu) L4_NOTHROW
 {
   return l4_scheduler_is_online_u(scheduler, cpu, l4_utcb());
+}
+
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW
+{
+  return l4_scheduler_get_rqs_u(scheduler,  l4_utcb());
 }

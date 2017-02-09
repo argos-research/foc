@@ -57,6 +57,11 @@ public:
     	return switch_rq(list, prio);
     }
 
+    void get_rqs(int* info)
+    {
+	_get_rqs(info);
+    }
+
     Context *schedule_in_progress;
   };
 

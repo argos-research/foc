@@ -95,6 +95,7 @@ public:
 
     bool empty(unsigned);  //gmc
     bool switch_rq(Fp_list *list, unsigned prio); //gmc
+    void _get_rqs(int* info);
 
     void set_idle(Sched_context *sc)
     { sc->_t = Deadline; sc->_sc.edf._p = 0; edf_rq.set_idle(sc); }
@@ -355,6 +356,13 @@ bool
 Sched_context::Ready_queue_base::switch_rq(Fp_list *list, unsigned prio) //gmc
 {
 	return fp_rq.switch_rq(list, prio);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_get_rqs(int* info)
+{
+	fp_rq._get_rqs(info);
 }
 
 PUBLIC inline

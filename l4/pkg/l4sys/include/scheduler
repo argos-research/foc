@@ -75,5 +75,10 @@ public:
    */
   bool is_online(l4_umword_t cpu, l4_utcb_t *utcb = l4_utcb()) const throw()
   { return l4_scheduler_is_online_u(cap(), cpu, utcb); }
+
+
+  /*l4_msgtag_t get_rqs(l4_utcb_t *utcb = l4_utcb()) const throw()
+  { printf("l4_scheduler_get_rqs\n");
+l4_scheduler_get_rqs_u(cap(), utcb); }*/
 };
 }
