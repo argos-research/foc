@@ -149,9 +149,10 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
 
   thread->migrate(&info);
 
-  outcb->values[7] = thread->dbg_id();
+  outcb->values[0] = thread->dbg_id();
+  outcb->values[1] = Timer::system_clock();
 
-  return commit_result(0);
+  return commit_result(0,2);
 }
 PRIVATE
 L4_msg_tag

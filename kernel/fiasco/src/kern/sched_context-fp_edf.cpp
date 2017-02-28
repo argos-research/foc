@@ -94,7 +94,7 @@ public:
     void requeue(Sched_context *sc);
 
     bool empty(unsigned);  //gmc
-    bool switch_rq(Fp_list *list, unsigned prio); //gmc
+    bool switch_rq(int* info); //gmc
     void _get_rqs(int* info);
 
     void set_idle(Sched_context *sc)
@@ -353,9 +353,9 @@ Sched_context::Ready_queue_base::empty(unsigned prio) //gmc
 
 IMPLEMENT
 bool
-Sched_context::Ready_queue_base::switch_rq(Fp_list *list, unsigned prio) //gmc
+Sched_context::Ready_queue_base::switch_rq(int* info) //gmc
 {
-	return fp_rq.switch_rq(list, prio);
+	return fp_rq.switch_rq(info);
 }
 
 IMPLEMENT

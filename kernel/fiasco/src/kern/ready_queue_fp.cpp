@@ -41,31 +41,44 @@ public:
   void dequeue(E *);
   E *next_to_run() const;
   bool empty(unsigned prio) {return prio_next[prio].empty();}
-  bool switch_rq(List *list, unsigned prio) {
-  		assert_kdb(cpu_lock.test());
-
-  		prio_next[prio].exchange(list);
-
-  		typename List::BaseIterator it = List::iter(prio_next[prio].front());
-  		dbgprintf("After exchange fp_rq: ");
-  		do
-  		{
-  			dbgprintf("%lx => ",Kobject_dbg::obj_to_id(it->context()));
-  		}while (++it != List::iter(prio_next[prio].front()));
-  		dbgprintf("end\n");
-
-  		return true;
+  bool switch_rq(int* info) {
+	int num_sub = info[0];
+	for(int j=0; j<256; j++) {
+		int pos=0;
+		typename List::BaseIterator it = prio_next[j].begin();
+		if(Kobject_dbg::obj_to_id(it->context())<1000) {
+		do
+		{
+			++it;
+			pos=pos+1;
+		}while (it != prio_next[j].begin());
+		E *tmp_contexts[pos];
+		for(int i=0; i<pos; i++)
+		{
+			E *tmp = (*prio_next[j].begin());
+			tmp_contexts[i]=tmp;
+			dequeue(tmp);
+		}
+		for(int i=pos-1;i>=0;i--)
+		{
+			E *tmp = tmp_contexts[i];
+			requeue(tmp);
+		}
+		}
+  		
   	}
+	return true;
+   }
    void _get_rqs(int* info) {
 	int elem_counter=1;
 	for(int j=0; j<256; j++) {
 			int pos=1;
 			typename List::BaseIterator it = List::iter(prio_next[j].front());
 			if(Kobject_dbg::obj_to_id(it->context())<1000) {
-  			//dbgprintf("Prio list: %d ",j);
+  			//dbgprintf("Prio list: %d\n",j);
   			do
   			{
-  				//dbgprintf("%d",Kobject_dbg::obj_to_id(it->context()));
+  				//dbgprintf("ID:%d ",Kobject_dbg::obj_to_id(it->context()));
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
 				info[2*elem_counter]=pos;
 				//dbgprintf("Pos RQ:%d\n", pos);
@@ -77,8 +90,6 @@ public:
 			}
 		}
 	info[0]=elem_counter-1;
-	//dbgprintf("%d objects\n", info[0]);
-	//return prios;
    }
 };
 

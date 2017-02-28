@@ -679,6 +679,9 @@ L4_msg_tag
 Thread_object::sys_thread_stats(L4_msg_tag const &/*tag*/, Utcb *utcb)
 {
   Clock::Time value;
+  Unsigned64 _period;
+  Unsigned64 _start;
+  Unsigned64 _dead;
 
   if (home_cpu() != current_cpu())
     drq(handle_sys_thread_stats_remote, &value, Drq::Any_ctxt);
@@ -688,11 +691,17 @@ Thread_object::sys_thread_stats(L4_msg_tag const &/*tag*/, Utcb *utcb)
       if (this == current())
         update_consumed_time();
       value = consumed_time();
+      _period = period();
+      _start = start_time();
+      _dead = get_dead_time();
     }
 
   reinterpret_cast<Utcb::Time_val *>(utcb->values)->t = value;
+  utcb->values[1]=_period;
+  utcb->values[2]=_start;
+  utcb->values[3]=_dead;
 
-  return commit_result(0, Utcb::Time_val::Words);
+  return commit_result(0, 4);//Utcb::Time_val::Words);
 }
 
 

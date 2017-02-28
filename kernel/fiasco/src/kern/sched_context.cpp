@@ -52,9 +52,9 @@ public:
   	  return empty(prio);
     }
 
-    bool switch_ready_queue(Fp_list *list, unsigned prio) //gmc
+    bool switch_ready_queue(int* info) //gmc
     {
-    	return switch_rq(list, prio);
+    	return switch_rq(info);
     }
 
     void get_rqs(int* info)

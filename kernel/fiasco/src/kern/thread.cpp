@@ -564,6 +564,7 @@ Thread::do_kill()
   cpu_lock.lock();
 
   state_change_dirty(0, Thread_dead);
+  //printf("%d dead %llu\n",(int)dbg_id(),Timer::system_clock());
 
   // dequeue from system queues
   Sched_context::rq.current().ready_dequeue(sched());
