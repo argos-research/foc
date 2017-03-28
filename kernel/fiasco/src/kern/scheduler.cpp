@@ -15,7 +15,7 @@ public:
 		Info       = 0,
 		Run_thread = 1,
 		Idle_time  = 2,
-		deploy_thread = 3,
+		Deploy_thread = 3,
 		Get_rqs = 4,
 	};
 
@@ -158,51 +158,19 @@ PRIVATE
 L4_msg_tag
 Scheduler::sys_deploy_thread(L4_fpage::Rights, Syscall_frame *f, Utcb const *utcb) //gmc
 {
-	printf("[Scheduler: sys_deploy_thread] 1\n");
 	L4_msg_tag const tag = f->tag();
-	Cpu_number const curr_cpu = current_cpu();
 
-	Obj_space *s = current()->space();
-	assert(s);
+	Sched_context::Ready_queue &rq = Sched_context::rq.current();
 
-	printf("tag words %d \n", tag.words());
+	int list[(int)tag.words()];
+	list[0]=((int)tag.words()-1)/2;
 
-
-	for(int i = 6 ; i <= tag.words(); i++){
-
-				L4_snd_item_iter snd_items(utcb, i);
-
-				if (EXPECT_FALSE(!tag.items() || !snd_items.next()))
-					return commit_result(-L4_err::EInval);
-
-				L4_fpage _thread(snd_items.get()->d);
-
-				if (EXPECT_FALSE(!_thread.is_objpage()))
-					return commit_result(-L4_err::EInval);
-
-				Thread *thread = Kobject::dcast<Thread_object*>(s->lookup_local(_thread.obj_index()));
-				if (!thread)
-					return commit_result(-L4_err::EInval);
-
-				printf("[Scheduler:sys_deploy] Thread to be scheduled: %lx\n", thread->dbg_id());
-
-				Sched_context *sc = thread->sched_context();
-
-				Sched_context::Ready_queue &rq = Sched_context::rq.current();
-
-				rq.ready_enqueue(thread->sched_context());
-
-//					list.push(sc, List::Front);
-//					if(i==tag.words()){
-//					 rq.switch_ready_queue(&list, 128);}
+	for(int i = 1 ; i < tag.words(); i++){
+		list[i]=utcb->values[i];					 
 	}
 
-//	//  __transaction_atomic {
-//		list.push(thread->sched_context(), List::Front);
-//		list.push(thread1->sched_context(), List::Front);
-//	}
+	rq.switch_ready_queue(&list[0]);
 
-	printf("[Scheduler: sys_schedule_thread] Added the thread to the Run queue\n");
 	return commit_result(0);
 }
 
@@ -346,7 +314,7 @@ Scheduler::kinvoke(L4_obj_ref ref, L4_fpage::Rights rights, Syscall_frame *f,
 	case Info:       return sys_info(rights, f, iutcb, outcb);
 	case Run_thread: return sys_run(rights, f, iutcb, outcb);
 	case Idle_time:  return sys_idle_time(rights, f, outcb);
-	case deploy_thread: return sys_deploy_thread(rights, f, iutcb);
+	case Deploy_thread: return sys_deploy_thread(rights, f, iutcb);
 	case Get_rqs: sys_get_rqs(rights, f, outcb);
 	default:         return commit_result(-L4_err::ENosys);
 	}

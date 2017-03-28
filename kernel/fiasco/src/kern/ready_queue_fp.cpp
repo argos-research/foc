@@ -43,26 +43,48 @@ public:
   bool empty(unsigned prio) {return prio_next[prio].empty();}
   bool switch_rq(int* info) {
 	int num_sub = info[0];
+	for(int i=0; i<num_sub; i++)
+	{
+		printf("Thread to be scheduled: %d %d\n",info[2*i+1],info[2*i+2]);
+	}
 	for(int j=0; j<256; j++) {
 		int pos=0;
 		typename List::BaseIterator it = prio_next[j].begin();
+		//how many objects are in the queue with prio j?
 		if(Kobject_dbg::obj_to_id(it->context())<1000) {
 		do
 		{
 			++it;
 			pos=pos+1;
 		}while (it != prio_next[j].begin());
+		//temporary array for contexts
 		E *tmp_contexts[pos];
+		//store all elements of the queue in temporary array
 		for(int i=0; i<pos; i++)
 		{
 			E *tmp = (*prio_next[j].begin());
 			tmp_contexts[i]=tmp;
 			dequeue(tmp);
 		}
-		for(int i=pos-1;i>=0;i--)
+		//array for order as supposed in info
+		E *ordered_contexts[pos];
+		int ordered=0;
+		//reorder elements
+		for(int i=1; i<=num_sub; i++)
 		{
-			E *tmp = tmp_contexts[i];
-			requeue(tmp);
+			for(int k=0; k<pos; k++)
+			{
+				if(Kobject_dbg::obj_to_id(tmp_contexts[k]->context())==info[2*i]&&j==info[2*i-1])
+				{
+					ordered_contexts[ordered]=tmp_contexts[k];
+					ordered++;
+				}
+			}
+		}
+		//requeue elements in the order which was supposed in info
+		for(int i=0;i<ordered;i++)
+		{
+			requeue(ordered_contexts[i]);
 		}
 		}
   		

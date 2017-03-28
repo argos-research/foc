@@ -33,13 +33,6 @@
  * <c>\#include <l4/sys/scheduler.h></c>
  */
 
-//gmc
-typedef struct l4_sched_thread_list
-{
-	l4_cap_idx_t list[10];
-	unsigned prio[10];
-	int n;
-}l4_sched_thread_list;
 
 /**
  * \brief CPU sets.
@@ -176,14 +169,13 @@ l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
  */
 L4_INLINE l4_msgtag_t
 l4_scheduler_deploy_thread(l4_cap_idx_t scheduler,
-		l4_sched_thread_list thread, l4_sched_param_t const *sp) L4_NOTHROW;
+		int* thread) L4_NOTHROW;
 
 /**
  * \internal
  */
 L4_INLINE l4_msgtag_t
-l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, l4_sched_thread_list thread,
-			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW;
+l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, int* thread, l4_utcb_t *utcb) L4_NOTHROW;
 
 
 /**
@@ -337,25 +329,16 @@ l4_scheduler_run_thread_u(l4_cap_idx_t scheduler, l4_cap_idx_t thread,
 }
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, l4_sched_thread_list thread,
-			  l4_sched_param_t const *sp, l4_utcb_t *utcb) L4_NOTHROW
+l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, int* thread, l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *m = l4_utcb_mr_u(utcb);
   m->mr[0] = L4_SCHEDULER_DEPLOY_THREAD_OP;
-  m->mr[1] = (sp->affinity.granularity << 24) | sp->affinity.offset;
-  m->mr[2] = sp->affinity.map;
-  m->mr[3] = sp->prio;
-  m->mr[4] = sp->quantum;
-  m->mr[5] = sp->deadline; /* Own work */
-  m->mr[6] = l4_map_obj_control(0, 0);
-
-  for(int i = 0; i < thread.n; i++){
-	  m->mr[i+7] = l4_obj_fpage(thread.list[i], 0, L4_FPAGE_RWX).raw;
+  m->mr[1]=thread[0];
+  for(int i = 0; i < thread[0]; i++){
+	  m->mr[2*i+1] = thread[2*i+1];
+	  m->mr[2*i+2] = thread[2*i+2];
   }
-
-  // The second argument of the message tag (here: literal 6) denotes how many message registers to transfer
-  // The third argument of the message tag (here: literal 1) denotes which thread to schedule
-  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, thread.n+5, 1, 0), L4_IPC_NEVER);
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, (2*thread[0])+1, 1, 0), L4_IPC_NEVER);
 }
 
 L4_INLINE l4_msgtag_t
@@ -410,9 +393,9 @@ l4_scheduler_run_thread(l4_cap_idx_t scheduler,
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_deploy_thread(l4_cap_idx_t scheduler,
-		l4_sched_thread_list thread, l4_sched_param_t const *sp) L4_NOTHROW
+		int* thread) L4_NOTHROW
 {
-  return l4_scheduler_deploy_thread_u(scheduler, thread, sp, l4_utcb());
+  return l4_scheduler_deploy_thread_u(scheduler, thread, l4_utcb());
 }
 
 L4_INLINE l4_msgtag_t
