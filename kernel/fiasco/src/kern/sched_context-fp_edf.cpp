@@ -96,6 +96,8 @@ public:
     bool empty(unsigned);  //gmc
     bool switch_rq(int* info); //gmc
     void _get_rqs(int* info);
+    void _get_dead(long long unsigned* info);
+    void _add_dead(int id, long long unsigned time);
 
     void set_idle(Sched_context *sc)
     { sc->_t = Deadline; sc->_sc.edf._p = 0; edf_rq.set_idle(sc); }
@@ -363,6 +365,20 @@ void
 Sched_context::Ready_queue_base::_get_rqs(int* info)
 {
 	fp_rq._get_rqs(info);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_get_dead(long long unsigned* info)
+{
+	fp_rq._get_dead(info);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_add_dead(int id, long long unsigned time)
+{
+	fp_rq._add_dead(id,time);
 }
 
 PUBLIC inline

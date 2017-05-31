@@ -62,6 +62,16 @@ public:
 	_get_rqs(info);
     }
 
+    void get_dead(long long unsigned* info)
+    {
+	_get_dead(info);
+    }
+
+    void add_dead(int id, long long unsigned time)
+    {
+	_add_dead(id, time);
+    }
+
     Context *schedule_in_progress;
   };
 

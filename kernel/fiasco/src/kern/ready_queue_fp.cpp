@@ -31,12 +31,27 @@ private:
   typedef typename E::Fp_list List;
   unsigned prio_highest;
   List prio_next[256];
+  long long unsigned dead_threads[256];
+  long long unsigned num_dead=0;
 
 
 public:
   void set_idle(E *sc)
   { sc->_prio = Config::Kernel_prio; }
 
+  void _add_dead(int id, long long unsigned time) {
+	dead_threads[2*num_dead]=id;
+	dead_threads[2*num_dead+1]=time;
+	num_dead++;
+  }
+  void _get_dead(long long unsigned* info) {
+	info[0]=num_dead;
+	for(int i=1; i<=num_dead; i++)
+	{
+		info[2*i-1]=dead_threads[2*i-2];
+		info[2*i]=dead_threads[2*i-1];
+	}
+  }
   void enqueue(E *, bool);
   void dequeue(E *);
   E *next_to_run() const;

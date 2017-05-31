@@ -426,6 +426,7 @@ PUBLIC
 void
 Thread::halt()
 {
+printf("%d halt %llu\n",(int)dbg_id(),Timer::system_clock());
   // Cancel must be cleared on all kernel entry paths. See slowtraps for
   // why we delay doing it until here.
   state_del(Thread_cancel);
@@ -434,6 +435,7 @@ Thread::halt()
   if (state_change_safely(~Thread_ready, Thread_cancel | Thread_dead))
     while (! (state() & Thread_ready))
       schedule();
+  
 }
 
 PUBLIC static
@@ -564,8 +566,7 @@ Thread::do_kill()
   cpu_lock.lock();
 
   state_change_dirty(0, Thread_dead);
-  //printf("%d dead %llu\n",(int)dbg_id(),Timer::system_clock());
-
+  Sched_context::rq.current().add_dead(dbg_id(),Timer::system_clock());
   // dequeue from system queues
   Sched_context::rq.current().ready_dequeue(sched());
 

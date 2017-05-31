@@ -17,6 +17,7 @@ public:
 		Idle_time  = 2,
 		Deploy_thread = 3,
 		Get_rqs = 4,
+		Get_dead = 5,
 	};
 
 
@@ -237,7 +238,23 @@ Scheduler::sys_get_rqs(L4_fpage::Rights, Syscall_frame *f, Utcb *outcb)
 		//printf("%d\n",info[i]);
 		outcb->values[i]=info[i];
 	}
-	return commit_result(0, info[0]+1);
+	return commit_result(0, (2*info[0])+1);
+}
+
+PRIVATE
+L4_msg_tag
+Scheduler::sys_get_dead(L4_fpage::Rights, Syscall_frame *f, Utcb *outcb)
+{
+	long long unsigned info[101];
+	Sched_context::Ready_queue &rq = Sched_context::rq.current();
+	rq.get_dead(info);
+	long long unsigned num_subjects=info[0];
+	outcb->values[0]=num_subjects;
+	for(int i=1; i<=2*num_subjects; i++)
+	{
+		outcb->values[i]=info[i];
+	}
+	return commit_result(0, (2*info[0])+1);
 }
 
 PUBLIC inline
@@ -315,7 +332,8 @@ Scheduler::kinvoke(L4_obj_ref ref, L4_fpage::Rights rights, Syscall_frame *f,
 	case Run_thread: return sys_run(rights, f, iutcb, outcb);
 	case Idle_time:  return sys_idle_time(rights, f, outcb);
 	case Deploy_thread: return sys_deploy_thread(rights, f, iutcb);
-	case Get_rqs: sys_get_rqs(rights, f, outcb);
+	case Get_rqs: 		sys_get_rqs(rights, f, outcb);
+	case Get_dead: 		sys_get_dead(rights, f, outcb);
 	default:         return commit_result(-L4_err::ENosys);
 	}
 }

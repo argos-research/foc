@@ -225,6 +225,11 @@ l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW;
 L4_INLINE l4_msgtag_t
 l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
 
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_dead(l4_cap_idx_t scheduler) L4_NOTHROW;
+
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_dead_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
 
 /**
  * \brief Operations on the Scheduler object.
@@ -239,6 +244,7 @@ enum L4_scheduler_ops
   L4_SCHEDULER_IDLE_TIME_OP  = 2UL, /**< Query idle time for the scheduler */
   L4_SCHEDULER_DEPLOY_THREAD_OP  = 3UL, /**< Query idle time for the scheduler */
   L4_GET_RQS = 4UL,
+  L4_GET_DEAD = 5UL,
 };
 
 /*************** Implementations *******************/
@@ -376,6 +382,14 @@ l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
   return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 1, 0, 0), L4_IPC_NEVER); 
 }
 
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_dead_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
+{
+  l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
+  v->mr[0] = L4_GET_DEAD;
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 1, 0, 0), L4_IPC_NEVER); 
+}
+
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_info(l4_cap_idx_t scheduler, l4_umword_t *cpu_max,
@@ -414,4 +428,10 @@ L4_INLINE l4_msgtag_t
 l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW
 {
   return l4_scheduler_get_rqs_u(scheduler,  l4_utcb());
+}
+
+L4_INLINE l4_msgtag_t
+l4_scheduler_get_dead(l4_cap_idx_t scheduler) L4_NOTHROW
+{
+  return l4_scheduler_get_dead_u(scheduler,  l4_utcb());
 }
