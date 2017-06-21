@@ -31,7 +31,7 @@ private:
   typedef typename E::Fp_list List;
   unsigned prio_highest;
   List prio_next[256];
-  long long unsigned dead_threads[256];
+  long long unsigned dead_threads[101];
   long long unsigned num_dead=0;
 
 

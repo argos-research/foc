@@ -332,8 +332,8 @@ Scheduler::kinvoke(L4_obj_ref ref, L4_fpage::Rights rights, Syscall_frame *f,
 	case Run_thread: return sys_run(rights, f, iutcb, outcb);
 	case Idle_time:  return sys_idle_time(rights, f, outcb);
 	case Deploy_thread: return sys_deploy_thread(rights, f, iutcb);
-	case Get_rqs: 		sys_get_rqs(rights, f, outcb);
-	case Get_dead: 		sys_get_dead(rights, f, outcb);
+	case Get_rqs: 		return sys_get_rqs(rights, f, outcb);
+	case Get_dead: 		return sys_get_dead(rights, f, outcb);
 	default:         return commit_result(-L4_err::ENosys);
 	}
 }
