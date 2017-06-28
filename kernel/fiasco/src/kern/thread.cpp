@@ -55,6 +55,8 @@ public:
     Op_register_del_irq = 5,
     Op_modify_senders = 6,
     Op_vcpu_control= 7,
+    // Modification for Checkpoint/Restore (rtcr)
+    Op_ex_all_regs = 0,
     Op_gdt_x86 = 0x10,
     Op_set_tpidruro_arm = 0x10,
     Op_set_segment_base_amd64 = 0x12,

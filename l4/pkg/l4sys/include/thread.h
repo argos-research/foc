@@ -121,6 +121,24 @@ L4_INLINE l4_msgtag_t
 l4_thread_ex_regs_ret(l4_cap_idx_t thread, l4_addr_t *ip, l4_addr_t *sp,
                       l4_umword_t *flags) L4_NOTHROW;
 
+// START Modification for Checkpoint/Restore (rtcr)
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs(l4_cap_idx_t thread, l4_addr_t *regs,
+                      l4_umword_t flags) L4_NOTHROW;
+
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_u(l4_cap_idx_t thread, l4_addr_t *regs,
+                        l4_umword_t flags, l4_utcb_t *utcb) L4_NOTHROW;
+
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_ret(l4_cap_idx_t thread, l4_addr_t *regs,
+                          l4_umword_t *flags) L4_NOTHROW;
+
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_ret_u(l4_cap_idx_t thread, l4_addr_t *regs,
+                            l4_umword_t *flags, l4_utcb_t *utcb) L4_NOTHROW;
+// END Modification for Checkpoint/Restore (rtcr)
+
 /**
  * \internal
  * \ingroup l4_thread_api
@@ -389,24 +407,20 @@ l4_thread_vcpu_resume_start_u(l4_utcb_t *utcb) L4_NOTHROW;
  * \brief Commit vCPU resume.
  * \ingroup l4_thread_api
  *
- * \param thread    Thread to be resumed, the invalid cap can be used
+ * \param thread    Thread to be resumed, using the invalid cap can be used
  *                  for the current thread.
  * \param tag       Tag to use, returned by l4_thread_vcpu_resume_start()
  *
  * \return System call result message tag. In extended vCPU mode and when
  * the virtual interrupts are cleared, the return code 1 flags an incoming
- * IPC message, whereas 0 indicates a VM exit. An error are returned upon:
- *   - Insufficient rights on the given task capability (-L4_EPERM).
- *   - Given task capability is invalid (-L4_ENOENT).
- *   - A supplied mapping failed.
+ * IPC message, whereas 0 indicates a VM exit.
  *
  * To resume into another address space the capability to the target task
- * must be set in the vCPU-state, with all lower bits in the task
- * capability cleared. The kernel adds the #L4_SYSF_SEND flag to this field
- * to indicate that the capability has been referenced in the kernel.
- * Consecutive resumes will not reference the task capability again until
- * all bits are cleared again. To release a task use the different task
- * capability or use an invalid capability with the #L4_SYSF_REPLY flag set.
+ * must be set in the vCPU-state. The task needs to be set only once,
+ * consecutive resumes to the same address space should use an invalid
+ * capability. The kernel resets the field to #L4_INVALID_CAP. To release a
+ * task use a different task or use an invalid capability with
+ * the #L4_SYSF_REPLY flag set.
  *
  * \see l4_vcpu_state_t
  */
@@ -598,10 +612,14 @@ enum L4_thread_ops
   L4_THREAD_REGISTER_DELETE_IRQ_OP    = 5UL,    /**< Register an IPC-gate deletion IRQ */
   L4_THREAD_MODIFY_SENDER_OP          = 6UL,    /**< Modify all senders IDs that match the given pattern */
   L4_THREAD_VCPU_CONTROL_OP           = 7UL,    /**< Enable / disable VCPU feature */
+  // Modification for Checkpoint/Restore (rtcr)
+  L4_THREAD_EX_ALL_REGS_OP            = 8UL,    /**< Exchange all registers operation */
   L4_THREAD_VCPU_CONTROL_EXT_OP       = L4_THREAD_VCPU_CONTROL_OP | 0x10000,
   L4_THREAD_X86_GDT_OP                = 0x10UL, /**< Gdt */
   L4_THREAD_ARM_TPIDRURO_OP           = 0x10UL, /**< Set TPIDRURO register */
   L4_THREAD_AMD64_SET_SEGMENT_BASE_OP = 0x12UL, /**< Set segment base */
+  L4_THREAD_GDT_X86_OP                = 0x10UL, /**< Gdt */
+  L4_THREAD_SET_FS_AMD64_OP           = 0x12UL, /**< Set FS/TLS */
   L4_THREAD_OPCODE_MASK               = 0xffff, /**< Mask for opcodes */
 };
 
@@ -690,6 +708,61 @@ l4_thread_ex_regs_ret_u(l4_cap_idx_t thread, l4_addr_t *ip, l4_addr_t *sp,
   *sp    = v->mr[2];
   return ret;
 }
+
+// START Modification for Checkpoint/Restore (rtcr)
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_u(l4_cap_idx_t thread, l4_addr_t *regs, l4_utcb_t *utcb) L4_NOTHROW
+{
+  l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
+  v->mr[0]  = L4_THREAD_EX_ALL_REGS_OP;
+  v->mr[1]  = regs[0];
+  v->mr[2]  = regs[1];
+  v->mr[3]  = regs[2];
+  v->mr[4]  = regs[3];
+  v->mr[5]  = regs[4];
+  v->mr[6]  = regs[5];
+  v->mr[7]  = regs[6];
+  v->mr[8]  = regs[7];
+  v->mr[9]  = regs[8];
+  v->mr[10] = regs[9];
+  v->mr[11] = regs[10];
+  v->mr[12] = regs[11];
+  v->mr[13] = regs[12];
+  v->mr[14] = regs[13]; // SP
+  v->mr[15] = regs[14]; // LR
+  v->mr[16] = regs[15]; // PC
+  v->mr[17] = regs[16]; // CSPR
+  return l4_ipc_call(thread, utcb, l4_msgtag(L4_PROTO_THREAD, 18, 0, 0), L4_IPC_NEVER);
+}
+
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_ret_u(l4_cap_idx_t thread, l4_addr_t *regs, l4_utcb_t *utcb) L4_NOTHROW
+{
+  l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
+  l4_msgtag_t ret = l4_thread_ex_all_regs_u(thread, regs, utcb);
+  if (l4_error_u(ret, utcb))
+    return ret;
+
+  regs[0]  = v->mr[1];
+  regs[1]  = v->mr[2];
+  regs[2]  = v->mr[3];
+  regs[3]  = v->mr[4];
+  regs[4]  = v->mr[5];
+  regs[5]  = v->mr[6];
+  regs[6]  = v->mr[7];
+  regs[7]  = v->mr[8];
+  regs[8]  = v->mr[9];
+  regs[9]  = v->mr[10];
+  regs[10] = v->mr[11];
+  regs[11] = v->mr[12];
+  regs[12] = v->mr[13];
+  regs[13] = v->mr[14]; // SP
+  regs[14] = v->mr[15]; // LR
+  regs[15] = v->mr[16]; // PC
+  regs[16] = v->mr[17]; // CSPR
+  return ret;
+}
+// END Modification for Checkpoint/Restore (rtcr)
 
 L4_INLINE void
 l4_thread_control_start_u(l4_utcb_t *utcb) L4_NOTHROW
@@ -805,6 +878,20 @@ l4_thread_ex_regs_ret(l4_cap_idx_t thread, l4_addr_t *ip, l4_addr_t *sp,
 {
   return l4_thread_ex_regs_ret_u(thread, ip, sp, flags, l4_utcb());
 }
+
+// START Modification for Checkpoint/Restore (rtcr)
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs(l4_cap_idx_t thread, l4_addr_t *regs) L4_NOTHROW
+{
+  return l4_thread_ex_all_regs_u(thread, regs, l4_utcb());
+}
+
+L4_INLINE l4_msgtag_t
+l4_thread_ex_all_regs_ret(l4_cap_idx_t thread, l4_addr_t *regs) L4_NOTHROW
+{
+  return l4_thread_ex_all_regs_ret_u(thread, regs, l4_utcb());
+}
+// END Modification for Checkpoint/Restore (rtcr)
 
 L4_INLINE void
 l4_thread_control_start(void) L4_NOTHROW
