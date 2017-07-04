@@ -31,7 +31,7 @@ private:
   typedef typename E::Fp_list List;
   unsigned prio_highest;
   List prio_next[256];
-  long long unsigned dead_threads[101];
+  long long unsigned dead_threads[100];
   long long unsigned num_dead=0;
 
 
@@ -40,6 +40,10 @@ public:
   { sc->_prio = Config::Kernel_prio; }
 
   void _add_dead(int id, long long unsigned time) {
+	if(num_dead==50) 
+	{
+		num_dead=0;
+	}
 	dead_threads[2*num_dead]=id;
 	dead_threads[2*num_dead+1]=time;
 	num_dead++;
