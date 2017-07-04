@@ -683,12 +683,12 @@ Thread_object::ex_all_regs(Utcb *utcb)
 }
 
 PRIVATE static
-unsigned
+Context::Drq::Result
 Thread_object::handle_remote_ex_all_regs(Drq *, Context *self, void *p)
 {
   Remote_syscall *params = reinterpret_cast<Remote_syscall*>(p);
   params->result = nonull_static_cast<Thread_object*>(self)->ex_all_regs(params->thread->utcb().access());
-  return params->result.proto() == 0 ? Drq::Need_resched : 0;
+  return params->result.proto() == 0 ? Drq::need_resched() : Drq::done();
 }
 
 PRIVATE inline NOEXPORT
@@ -704,7 +704,7 @@ Thread_object::sys_ex_all_regs(L4_msg_tag const &tag, Utcb *utcb)
   Remote_syscall params;
   params.thread = current_thread();
 
-  drq(handle_remote_ex_all_regs, &params, 0, Drq::Any_ctxt);
+  drq(handle_remote_ex_all_regs, &params, Drq::Any_ctxt);
   return params.result;
 }
 
@@ -799,5 +799,3 @@ Thread_object::sys_thread_stats(L4_msg_tag const &/*tag*/, Utcb *utcb)
 
   return commit_result(0, 4);//Utcb::Time_val::Words);
 }
-
-

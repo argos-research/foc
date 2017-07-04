@@ -123,20 +123,18 @@ l4_thread_ex_regs_ret(l4_cap_idx_t thread, l4_addr_t *ip, l4_addr_t *sp,
 
 // START Modification for Checkpoint/Restore (rtcr)
 L4_INLINE l4_msgtag_t
-l4_thread_ex_all_regs(l4_cap_idx_t thread, l4_addr_t *regs,
-                      l4_umword_t flags) L4_NOTHROW;
+l4_thread_ex_all_regs(l4_cap_idx_t thread, l4_addr_t *regs) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
 l4_thread_ex_all_regs_u(l4_cap_idx_t thread, l4_addr_t *regs,
-                        l4_umword_t flags, l4_utcb_t *utcb) L4_NOTHROW;
+                        l4_utcb_t *utcb) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
-l4_thread_ex_all_regs_ret(l4_cap_idx_t thread, l4_addr_t *regs,
-                          l4_umword_t *flags) L4_NOTHROW;
+l4_thread_ex_all_regs_ret(l4_cap_idx_t thread, l4_addr_t *regs) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
 l4_thread_ex_all_regs_ret_u(l4_cap_idx_t thread, l4_addr_t *regs,
-                            l4_umword_t *flags, l4_utcb_t *utcb) L4_NOTHROW;
+                            l4_utcb_t *utcb) L4_NOTHROW;
 // END Modification for Checkpoint/Restore (rtcr)
 
 /**
