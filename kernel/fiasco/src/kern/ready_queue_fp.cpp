@@ -118,7 +118,7 @@ public:
   			do
   			{
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
-				info[2*elem_counter]=j-127;
+				info[2*elem_counter]=j;
 				elem_counter++;
 				++it;
   			}while (it != List::iter(prio_next[j].front()));
