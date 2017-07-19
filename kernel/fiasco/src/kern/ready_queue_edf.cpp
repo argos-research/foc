@@ -5,6 +5,7 @@ INTERFACE[sched_fp_edf || sched_edf]:
 #include "globals.h"
 #include <cxx/dlist>
 #include "config.h"
+#include "kobject_dbg.h"
 
 #define ANSI_BOLD          "\x1b[1m"
 #define ANSI_BOLD_RESET    "\x1b[0m"
@@ -37,6 +38,21 @@ public:
   void enqueue(E *, bool is_current);
   void dequeue(E *);
   E *next_to_run() const;
+
+ void _get_rqs(int* info) {
+	int elem_counter=1;
+			typename List::BaseIterator it = List::iter(rq.front());
+			if(Kobject_dbg::obj_to_id(it->context())<1000) {
+  			do
+  			{
+				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
+				info[2*elem_counter]=_e(it)->_dl;
+				elem_counter++;
+				++it;
+  			}while (it != List::iter(rq.front()));
+			}
+	info[0]=elem_counter-1;
+ }
 
 private:
   typedef typename E::Edf_list List;
@@ -73,7 +89,6 @@ IMPLEMENTATION [sched_fp_edf || sched_edf]:
 #include "kdb_ke.h"
 #include "std_macros.h"
 
-#include "kobject_dbg.h"
 #include "debug_output.h"
 
 IMPLEMENT inline
