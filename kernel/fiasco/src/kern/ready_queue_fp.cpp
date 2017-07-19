@@ -113,21 +113,15 @@ public:
    void _get_rqs(int* info) {
 	int elem_counter=1;
 	for(int j=0; j<256; j++) {
-			int pos=1;
 			typename List::BaseIterator it = List::iter(prio_next[j].front());
 			if(Kobject_dbg::obj_to_id(it->context())<1000) {
-  			//dbgprintf("Prio list: %d\n",j);
   			do
   			{
-  				//dbgprintf("ID:%d ",Kobject_dbg::obj_to_id(it->context()));
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
-				info[2*elem_counter]=pos;
-				//dbgprintf("Pos RQ:%d\n", pos);
-				pos++;
+				info[2*elem_counter]=j-127;
 				elem_counter++;
 				++it;
   			}while (it != List::iter(prio_next[j].front()));
-			//dbgprintf("\n");
 			}
 		}
 	info[0]=elem_counter-1;
