@@ -375,6 +375,7 @@ public:
   Cpu_time start_time();
   void set_dead_time(Clock::Time dead);
   Cpu_time get_dead_time();
+  Cpu_time get_time();
 
   virtual bool kill() = 0;
 
@@ -1202,6 +1203,12 @@ Context::get_dead_time()
 	return _dead_time;
 }
 
+IMPLEMENT
+Cpu_time
+Context::get_time()
+{
+	return Timer::system_clock();
+}
 
 /**
  * Switch scheduling context and execution context.
