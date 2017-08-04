@@ -67,12 +67,14 @@ public:
 		printf("Thread to be scheduled: %d %d\n",info[2*i+1],info[2*i+2]);
 	}
 	for(int j=0; j<256; j++) {
+		//printf("Deploying...");
 		int pos=0;
 		typename List::BaseIterator it = prio_next[j].begin();
 		//how many objects are in the queue with prio j?
-		if(Kobject_dbg::obj_to_id(it->context())<1000) {
+		if(Kobject_dbg::obj_to_id(it->context())<10000) {
 		do
 		{
+			//printf("count %d\n", Kobject_dbg::obj_to_id(it->context()));
 			++it;
 			pos=pos+1;
 		}while (it != prio_next[j].begin());
@@ -82,8 +84,16 @@ public:
 		for(int i=0; i<pos; i++)
 		{
 			E *tmp = (*prio_next[j].begin());
+			//printf("dequeue %d\n", Kobject_dbg::obj_to_id(tmp));
 			tmp_contexts[i]=tmp;
 			dequeue(tmp);
+			//Keep important tasks alive
+			if(Kobject_dbg::obj_to_id(tmp)<600)
+			{
+				//printf("requeue %d\n", Kobject_dbg::obj_to_id(tmp));
+				requeue(tmp);
+			}
+
 		}
 		//array for order as supposed in info
 		E *ordered_contexts[pos];
@@ -93,7 +103,7 @@ public:
 		{
 			for(int k=0; k<pos; k++)
 			{
-				if(Kobject_dbg::obj_to_id(tmp_contexts[k]->context())==info[2*i]&&j==info[2*i-1])
+				if(Kobject_dbg::obj_to_id(tmp_contexts[k]->context())==info[2*i-1]&&j==info[2*i])
 				{
 					ordered_contexts[ordered]=tmp_contexts[k];
 					ordered++;
@@ -103,6 +113,7 @@ public:
 		//requeue elements in the order which was supposed in info
 		for(int i=0;i<ordered;i++)
 		{
+			//printf("enqueue %d\n", Kobject_dbg::obj_to_id(ordered_contexts[i]));
 			requeue(ordered_contexts[i]);
 		}
 		}
