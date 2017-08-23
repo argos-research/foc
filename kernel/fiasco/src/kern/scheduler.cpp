@@ -163,11 +163,11 @@ Scheduler::sys_deploy_thread(L4_fpage::Rights, Syscall_frame *f, Utcb const *utc
 
 	Sched_context::Ready_queue &rq = Sched_context::rq.current();
 
-	int list[(int)tag.words()];
-	list[0]=((int)tag.words()-1)/2;
+	int list[(int)tag.words()-1];
+	list[0]=((int)tag.words()-3)/2;
 
-	for(int i = 1 ; i < tag.words(); i++){
-		list[i]=utcb->values[i];					 
+	for(int i = 1 ; i < tag.words()-1; i++){
+		list[i]=utcb->values[i+1];			 
 	}
 
 	rq.switch_ready_queue(&list[0]);
@@ -225,9 +225,10 @@ Scheduler::sys_info(L4_fpage::Rights, Syscall_frame *f,
 
 PRIVATE
 L4_msg_tag
-Scheduler::sys_get_rqs(L4_fpage::Rights, Syscall_frame *f, Utcb *outcb)
+Scheduler::sys_get_rqs(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *outcb)
 {
 	int info[101];
+	info[1]=iutcb->values[1];
 	Sched_context::Ready_queue &rq = Sched_context::rq.current();
 	rq.get_rqs(info);
 	int num_subjects=info[0];
@@ -332,7 +333,7 @@ Scheduler::kinvoke(L4_obj_ref ref, L4_fpage::Rights rights, Syscall_frame *f,
 	case Run_thread: return sys_run(rights, f, iutcb, outcb);
 	case Idle_time:  return sys_idle_time(rights, f, outcb);
 	case Deploy_thread: return sys_deploy_thread(rights, f, iutcb);
-	case Get_rqs: 		return sys_get_rqs(rights, f, outcb);
+	case Get_rqs: 		return sys_get_rqs(rights, f, iutcb, outcb);
 	case Get_dead: 		return sys_get_dead(rights, f, outcb);
 	default:         return commit_result(-L4_err::ENosys);
 	}

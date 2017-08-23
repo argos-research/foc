@@ -6,6 +6,7 @@ INTERFACE[sched_fp_edf || sched_edf]:
 #include <cxx/dlist>
 #include "config.h"
 #include "kobject_dbg.h"
+#include "debug_output.h"
 
 #define ANSI_BOLD          "\x1b[1m"
 #define ANSI_BOLD_RESET    "\x1b[0m"
@@ -39,20 +40,32 @@ public:
   void dequeue(E *);
   E *next_to_run() const;
 
- void _get_rqs(int* info) {
+  void _add_dead(int id, long long unsigned time) {
+  }
+
+  void _get_dead(long long unsigned* info) {
+  }
+
+  bool switch_rq(int* info) {
+	dbgprintf("deploy rq edf\n");
+	return false;
+  }
+
+  void _get_rqs(int* info) {
+	dbgprintf("get rq edf\n");
 	int elem_counter=1;
 			typename List::BaseIterator it = List::iter(rq.front());
 			if(Kobject_dbg::obj_to_id(it->context())<1000) {
   			do
   			{
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
-				info[2*elem_counter]=_e(it)->_dl;
+				//info[2*elem_counter]=_e(it)->_dl;
 				elem_counter++;
 				++it;
   			}while (it != List::iter(rq.front()));
 			}
 	info[0]=elem_counter-1;
- }
+  }
 
 private:
   typedef typename E::Edf_list List;

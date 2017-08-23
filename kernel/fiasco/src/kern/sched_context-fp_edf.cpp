@@ -357,14 +357,20 @@ IMPLEMENT
 bool
 Sched_context::Ready_queue_base::switch_rq(int* info) //gmc
 {
-	return fp_rq.switch_rq(info);
+	if(info[1]==0)
+		return fp_rq.switch_rq(info);
+	else
+		return edf_rq.switch_rq(info);
 }
 
 IMPLEMENT
 void
 Sched_context::Ready_queue_base::_get_rqs(int* info)
 {
-	fp_rq._get_rqs(info);
+	if(info[1]==0)
+		fp_rq._get_rqs(info);
+	else
+		edf_rq._get_rqs(info);
 }
 
 IMPLEMENT

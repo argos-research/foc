@@ -61,10 +61,11 @@ public:
   E *next_to_run() const;
   bool empty(unsigned prio) {return prio_next[prio].empty();}
   bool switch_rq(int* info) {
+	dbgprintf("deploy rq fp\n");
 	int num_sub = info[0];
-	for(int i=0; i<num_sub; i++)
+	for(int i=1; i<=num_sub; i++)
 	{
-		printf("Thread to be scheduled: %d %d\n",info[2*i+1],info[2*i+2]);
+		printf("Thread to be scheduled: %d %d\n",info[2*i],info[2*i+1]);
 	}
 	for(int j=0; j<256; j++) {
 		//printf("Deploying...");
@@ -103,7 +104,7 @@ public:
 		{
 			for(int k=0; k<pos; k++)
 			{
-				if(Kobject_dbg::obj_to_id(tmp_contexts[k]->context())==info[2*i-1]&&j==info[2*i])
+				if(Kobject_dbg::obj_to_id(tmp_contexts[k]->context())==info[2*i]&&j==info[2*i+1])
 				{
 					ordered_contexts[ordered]=tmp_contexts[k];
 					ordered++;
@@ -122,6 +123,7 @@ public:
 	return true;
    }
    void _get_rqs(int* info) {
+	dbgprintf("get rq fp\n");
 	int elem_counter=1;
 	for(int j=0; j<256; j++) {
 			typename List::BaseIterator it = List::iter(prio_next[j].front());

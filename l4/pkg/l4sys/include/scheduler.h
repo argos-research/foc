@@ -220,10 +220,10 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW;
+l4_scheduler_get_rqs(int queue, l4_cap_idx_t scheduler) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
+l4_scheduler_get_rqs_u(int queue, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_get_dead(l4_cap_idx_t scheduler) L4_NOTHROW;
@@ -340,11 +340,12 @@ l4_scheduler_deploy_thread_u(l4_cap_idx_t scheduler, int* thread, l4_utcb_t *utc
   l4_msg_regs_t *m = l4_utcb_mr_u(utcb);
   m->mr[0] = L4_SCHEDULER_DEPLOY_THREAD_OP;
   m->mr[1]=thread[0];
-  for(int i = 0; i < thread[0]; i++){
-	  m->mr[2*i+1] = thread[2*i+1];
-	  m->mr[2*i+2] = thread[2*i+2];
+  m->mr[2]=thread[1];
+  for(int i = 1; i < thread[0]+1; i++){
+	  m->mr[2*i+1] = thread[2*i];
+	  m->mr[2*i+2] = thread[2*i+1];
   }
-  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, (2*thread[0])+1, 1, 0), L4_IPC_NEVER);
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, (2*thread[0])+3, 1, 0), L4_IPC_NEVER);
 }
 
 L4_INLINE l4_msgtag_t
@@ -375,11 +376,12 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 }
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs_u(l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
+l4_scheduler_get_rqs_u(int queue, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
   v->mr[0] = L4_GET_RQS;
-  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 1, 0, 0), L4_IPC_NEVER); 
+  v->mr[1]=queue;
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 2, 0, 0), L4_IPC_NEVER); 
 }
 
 L4_INLINE l4_msgtag_t
@@ -425,9 +427,9 @@ l4_scheduler_is_online(l4_cap_idx_t scheduler, l4_umword_t cpu) L4_NOTHROW
 }
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs(l4_cap_idx_t scheduler) L4_NOTHROW
+l4_scheduler_get_rqs(int queue, l4_cap_idx_t scheduler) L4_NOTHROW
 {
-  return l4_scheduler_get_rqs_u(scheduler,  l4_utcb());
+  return l4_scheduler_get_rqs_u(queue, scheduler,  l4_utcb());
 }
 
 L4_INLINE l4_msgtag_t
