@@ -47,11 +47,6 @@ public:
       enqueue(to, false);
     }
 
-    bool ready_empty(unsigned prio) //gmc
-    {
-  	  return empty(prio);
-    }
-
     bool switch_ready_queue(int* info) //gmc
     {
     	return switch_rq(info);
