@@ -47,12 +47,12 @@ public:
   }
 
   bool switch_rq(int* info) {
-	dbgprintf("deploy rq edf\n");
+	//dbgprintf("deploy rq edf\n");
 	return false;
   }
 
   void _get_rqs(int* info) {
-	dbgprintf("get rq edf\n");
+	//dbgprintf("get rq edf\n");
 	int elem_counter=1;
 			typename List::BaseIterator it = List::iter(rq.front());
 			if(Kobject_dbg::obj_to_id(it->context())<1000) {
@@ -136,12 +136,12 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
 
   // Insert new Sched_context at the right position,
   // e.g. keep ascending order of the queue from short to large deadlines
-  dbgprintf("[Ready_queue_edf::enqueue] Inserted id:%lx", Kobject_dbg::obj_to_id(i->context()));
+  //dbgprintf("[Ready_queue_edf::enqueue] Inserted id:%lx", Kobject_dbg::obj_to_id(i->context()));
   typename List::BaseIterator it;
   if (rq.empty())
   {
     rq.push_front(i);
-    dbgprintf(" at front\n");
+    //dbgprintf(" at front\n");
   }
   else
   {
@@ -152,7 +152,7 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
     {
       if (deadline < it->deadline())
       {
-        dbgprintf(" (different deadlines: %d vs. %d)\n", deadline, it->deadline());
+        //dbgprintf(" (different deadlines: %d vs. %d)\n", deadline, it->deadline());
         rq.insert_before(i, it);
         inserted = true;
         if (it == List::iter(rq.front()))
@@ -160,7 +160,7 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
       }
       else if (deadline == it->deadline())
       {
-        dbgprintf(" (same deadline: %d)\n", deadline);
+        //dbgprintf(" (same deadline: %d)\n", deadline);
         rq.insert_after(i, it);
         inserted = true;
       }
@@ -171,21 +171,21 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
       // Has not been enqueued yet
       // Deadline is bigger than any other -> insert at back
       rq.push_back(i);
-      dbgprintf(" at back (deadline: %d)\n", deadline);
+      //dbgprintf(" at back (deadline: %d)\n", deadline);
     }
   }
   count++;
   // Print content of ready queue
   it = List::iter(rq.front());
-  dbgprintf(ANSI_BOLD "edf_rq: ");
+  //dbgprintf(ANSI_BOLD "edf_rq: ");
   do
   {
-    dbgprintf("%lx(dl:%d) => ",
-               Kobject_dbg::obj_to_id(it->context()),
-               it->deadline());
+    //dbgprintf("%lx(dl:%d) => ",
+    //           Kobject_dbg::obj_to_id(it->context()),
+    //           it->deadline());
   }
   while (++it != List::iter(rq.front()));
-  dbgprintf("end\n" ANSI_BOLD_RESET);
+  //dbgprintf("end\n" ANSI_BOLD_RESET);
 }
 
 /**
@@ -212,19 +212,19 @@ Ready_queue_edf<E>::dequeue(E *i)
   if (count)
   {
      it = List::iter(rq.front());
-     dbgprintf(ANSI_BOLD "edf_rq: ");
+     //dbgprintf(ANSI_BOLD "edf_rq: ");
      do
      {
-       dbgprintf("%lx(dl:%d) => ",
-                  Kobject_dbg::obj_to_id(it->context()),
-                  it->deadline());
+       //dbgprintf("%lx(dl:%d) => ",
+       //           Kobject_dbg::obj_to_id(it->context()),
+       //           it->deadline());
      }
      while (++it != List::iter(rq.front()));
-     dbgprintf("end\n" ANSI_BOLD_RESET);
+     //dbgprintf("end\n" ANSI_BOLD_RESET);
   }
   else
   {
-    dbgprintf(ANSI_BOLD "edf_rq: empty\n" ANSI_BOLD_RESET);
+    //dbgprintf(ANSI_BOLD "edf_rq: empty\n" ANSI_BOLD_RESET);
   }
 }
 
@@ -238,7 +238,7 @@ Ready_queue_edf<E>::requeue(E *i)
 {
   if (!i->in_ready_list())
   {
-    dbgprintf("Got requeue call for id:%lx\n", Kobject_dbg::obj_to_id(i->context()));
+    //dbgprintf("Got requeue call for id:%lx\n", Kobject_dbg::obj_to_id(i->context()));
     enqueue(i, false);
   }
 }
@@ -248,6 +248,6 @@ PUBLIC template< typename E > inline
 void
 Ready_queue_edf<E>::deblock_refill(E *sc)
 {
-  dbgprintf("Got deblock_refill call for id:%lx\n", Kobject_dbg::obj_to_id(sc->context()));
+  //dbgprintf("Got deblock_refill call for id:%lx\n", Kobject_dbg::obj_to_id(sc->context()));
   _e(sc)->_left = _e(sc)->_q;
 }

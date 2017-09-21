@@ -20,11 +20,6 @@ public:
 		Get_dead = 5,
 	};
 
-
-	typedef Sched_context::Fp_list List; //gmc
-
-	List list; //gmc
-
 	static Scheduler scheduler;
 private:
 	Irq_base *_irq;
@@ -123,33 +118,49 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
 
   /* Own work */
 #ifdef CONFIG_SCHED_FP_EDF
+  /* edf thread */
   if (iutcb->values[5] > 0)
   {
-    // Some deadline has been passed, so our thread becomes a deadline-based thread
-    dbgprintf("[Scheduler::sys_run] Deadline passed for id:%lx is: %lu\n", thread->dbg_id(), iutcb->values[5]);
-    L4_sched_param_deadline sched_p;
+    L4_sched_param_deadline	      sched_p;
     sched_p.sched_class     = -3;
-    sched_p.deadline        = iutcb->values[5];
+    sched_p.deadline 	    = iutcb->values[5];
     thread->sched_context()->set(static_cast<L4_sched_param*>(&sched_p));
+    sched_param = reinterpret_cast<L4_sched_param const *>(&sched_p);
+    info.sp=sched_param;
+  }
+  else
+  {
+  /* fp thread */
+  if (iutcb->values[3] > 0)
+  {
+    L4_sched_param_fixed_prio	      sched_p;
+    sched_p.sched_class     = -1;
+    sched_p.prio 	    = iutcb->values[3];
+    thread->sched_context()->set(static_cast<L4_sched_param*>(&sched_p));
+    sched_param = reinterpret_cast<L4_sched_param const *>(&sched_p);
+    info.sp=sched_param;
   }
   else
   {
     info.sp = sched_param;
+  }
   }
 #else
   info.sp = sched_param;
 #endif
 
   if (0)
-    printf("CPU[%u]: run(thread=%lx, cpu=%u (%lx,%u,%u)\n",
+    printf("CPU[%u]: run(thread=%lx, cpu=%u (%lx,%u,%u), sched_class=%d\n",
            cxx::int_value<Cpu_number>(curr_cpu), thread->dbg_id(),
            cxx::int_value<Cpu_number>(info.cpu),
            iutcb->values[2],
            cxx::int_value<Cpu_number>(sched_param->cpus.offset()),
-           cxx::int_value<Order>(sched_param->cpus.granularity()));
+           cxx::int_value<Order>(sched_param->cpus.granularity()),
+	   sched_param->sched_class);
 
   thread->migrate(&info);
 
+  //start time
   outcb->values[0] = thread->dbg_id();
   outcb->values[1] = Timer::system_clock();
 

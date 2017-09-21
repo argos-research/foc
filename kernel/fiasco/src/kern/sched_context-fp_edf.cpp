@@ -185,7 +185,11 @@ Sched_context::in_ready_list() const
   // This magically works for the fp list and the heap,
   // because wfq._ready_link and fp._ready_next are the
   // same memory location
-  return _sc.edf._ready_link != 0;
+  if(_t==Fixed_prio||_t>=0)
+    return Fp_list::in_list(this);
+  else
+    return _sc.edf._ready_link != 0;
+  return false;
 }
 
 /**
@@ -236,25 +240,32 @@ int
 Sched_context::set(L4_sched_param const *_p)
 {
   Sp const *p = reinterpret_cast<Sp const *>(_p);
-
   if (p->p.sched_class >= 0)
   {
-    // Legacy Fixed_prio
+    // legacy fixed prio
     _t = Fixed_prio;
     _sc.fp._p = p->legacy_fixed_prio.prio;
     if (p->legacy_fixed_prio.prio > 255)
       _sc.fp._p = 255;
 
+    _sc.fp._q = p->legacy_fixed_prio.quantum;
     if (p->legacy_fixed_prio.quantum == 0)
       _sc.fp._q = Config::Default_time_slice;
-    else
-      _sc.fp._q = p->legacy_fixed_prio.quantum;
-
     return 0;
   }
-
   switch (p->p.sched_class)
   {
+
+    case L4_sched_param_deadline::Class:
+      if (p->deadline.deadline == 0)
+        return -L4_err::EInval;
+      _t = Deadline;
+      _sc.edf._p = 0;
+      _sc.edf._dl = p->deadline.deadline;
+      _sc.edf._q = Config::Default_time_slice;
+
+      break;
+
     case L4_sched_param_fixed_prio::Class:
       _t = Fixed_prio;
 
@@ -269,16 +280,6 @@ Sched_context::set(L4_sched_param const *_p)
 
       break;
 
-    case L4_sched_param_deadline::Class:
-      if (p->deadline.deadline == 0)
-        return -L4_err::EInval;
-      _t = Deadline;
-      _sc.edf._p = 0;
-      _sc.edf._dl = p->deadline.deadline;
-      _sc.edf._q = Config::Default_time_slice;
-
-      break;
- 
     default:
       return L4_err::ERange;
   };
@@ -288,8 +289,8 @@ Sched_context::set(L4_sched_param const *_p)
    * Dequeuing & enqueuing ensures that the Sched_context object is enqueued in the appropriate ready queue
    * since its type may have changed due to this set operation.
    */
-  rq.current().dequeue(this);
-  rq.current().enqueue(this, this == rq.current().current_sched());
+  //rq.current().dequeue(this);
+  //rq.current().enqueue(this, this == rq.current().current_sched());
 
   return 0;
 }
@@ -313,7 +314,9 @@ void
 Sched_context::Ready_queue_base::enqueue(Sched_context *sc, bool is_current)
 {
   if (sc->_t == Fixed_prio)
+  {
     fp_rq.enqueue(sc, is_current);
+  }
   else
   {
     edf_rq.enqueue(sc, is_current);
@@ -407,19 +410,28 @@ PUBLIC inline
 void
 Sched_context::replenish()
 {
-  _sc.fp._left = _sc.fp._q;
+  if (_t == Fixed_prio)
+    _sc.fp._left = _sc.fp._q;
+  else
+    _sc.edf._left = _sc.edf._q;  
 }
 
 PUBLIC inline
 void
 Sched_context::set_left(Unsigned64 l)
 {
-  _sc.fp._left = l;
+  if (_t == Fixed_prio)
+    _sc.fp._left = l;
+  else
+    _sc.edf._left = l;
 }
 
 PUBLIC inline
 Unsigned64
 Sched_context::left() const
 {
-  return _sc.fp._left;
+  if (_t == Fixed_prio)
+    return _sc.fp._left;
+  else
+    return _sc.edf._left;
 }
