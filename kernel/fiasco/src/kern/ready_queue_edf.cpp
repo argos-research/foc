@@ -55,14 +55,14 @@ public:
 	//dbgprintf("get rq edf\n");
 	int elem_counter=1;
 			typename List::BaseIterator it = List::iter(rq.front());
-			if(Kobject_dbg::obj_to_id(it->context())<1000) {
+			if(Kobject_dbg::obj_to_id(it->context())!=-1) {
   			do
   			{
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
-				//info[2*elem_counter]=_e(it)->_dl;
+				info[2*elem_counter]=it->metric();
 				elem_counter++;
 				++it;
-  			}while (it != List::iter(rq.front()));
+  			}while (it != List::iter(rq.front())&&(Kobject_dbg::obj_to_id(it->context())!=-1));
 			}
 	info[0]=elem_counter-1;
   }
