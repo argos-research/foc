@@ -72,13 +72,13 @@ public:
 		int pos=0;
 		typename List::BaseIterator it = prio_next[j].begin();
 		//how many objects are in the queue with prio j?
-		if(Kobject_dbg::obj_to_id(it->context())<10000) {
+		if(Kobject_dbg::obj_to_id(it->context())!=-1) {
 		do
 		{
 			//printf("count %d\n", Kobject_dbg::obj_to_id(it->context()));
 			++it;
 			pos=pos+1;
-		}while (it != prio_next[j].begin());
+		}while (it != prio_next[j].begin()&&(Kobject_dbg::obj_to_id(it->context())!=-1));
 		//temporary array for contexts
 		E *tmp_contexts[pos];
 		//store all elements of the queue in temporary array
@@ -127,14 +127,14 @@ public:
 	int elem_counter=1;
 	for(int j=0; j<256; j++) {
 			typename List::BaseIterator it = List::iter(prio_next[j].front());
-			if(Kobject_dbg::obj_to_id(it->context())<1000) {
+			if(Kobject_dbg::obj_to_id(it->context())!=-1) {
   			do
   			{
 				info[2*elem_counter-1]=(int)Kobject_dbg::obj_to_id(it->context());
 				info[2*elem_counter]=j;
 				elem_counter++;
 				++it;
-  			}while (it != List::iter(prio_next[j].front()));
+  			}while (it != List::iter(prio_next[j].front())&&(Kobject_dbg::obj_to_id(it->context())!=-1));
 			}
 		}
 	info[0]=elem_counter-1;
