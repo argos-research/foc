@@ -52,7 +52,7 @@ public:
   }
 
   void _get_rqs(int* info) {
-	//dbgprintf("get rq edf\n");
+	//dbgprintf("get rq edf cpu:%d\n",current_cpu());
 	int elem_counter=1;
 			typename List::BaseIterator it = List::iter(rq.front());
 			if(Kobject_dbg::obj_to_id(it->context())!=-1) {
@@ -104,6 +104,8 @@ IMPLEMENTATION [sched_fp_edf || sched_edf]:
 
 #include "debug_output.h"
 
+#include "timer.h"
+
 IMPLEMENT inline
 template<typename E>
 E *
@@ -128,6 +130,14 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
 {
   assert_kdb(cpu_lock.test());
 
+  unsigned deadline = i->deadline();
+
+  /* deadline passed */
+  if(deadline<(Timer::system_clock()))
+  {
+     return;
+  }
+
   // Don't enqueue threads which are already enqueued
   if (EXPECT_FALSE (i->in_ready_list()))
     return;
@@ -145,7 +155,6 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
   }
   else
   {
-    unsigned deadline = i->deadline();
     bool inserted = false;
     it = List::iter(rq.front());
     do
