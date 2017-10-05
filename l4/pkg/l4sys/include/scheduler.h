@@ -220,10 +220,10 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs(int queue, l4_cap_idx_t scheduler) L4_NOTHROW;
+l4_scheduler_get_rqs(int queue, int core, l4_cap_idx_t scheduler) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs_u(int queue, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
+l4_scheduler_get_rqs_u(int queue, int core, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW;
 
 L4_INLINE l4_msgtag_t
 l4_scheduler_get_dead(l4_cap_idx_t scheduler) L4_NOTHROW;
@@ -376,12 +376,13 @@ l4_scheduler_is_online_u(l4_cap_idx_t scheduler, l4_umword_t cpu,
 }
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs_u(int queue, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
+l4_scheduler_get_rqs_u(int queue, int core, l4_cap_idx_t scheduler, l4_utcb_t *utcb) L4_NOTHROW
 {
   l4_msg_regs_t *v = l4_utcb_mr_u(utcb);
   v->mr[0] = L4_GET_RQS;
   v->mr[1]=queue;
-  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 2, 0, 0), L4_IPC_NEVER); 
+  v->mr[2]=core;
+  return l4_ipc_call(scheduler, utcb, l4_msgtag(L4_PROTO_SCHEDULER, 3, 0, 0), L4_IPC_NEVER); 
 }
 
 L4_INLINE l4_msgtag_t
@@ -427,9 +428,9 @@ l4_scheduler_is_online(l4_cap_idx_t scheduler, l4_umword_t cpu) L4_NOTHROW
 }
 
 L4_INLINE l4_msgtag_t
-l4_scheduler_get_rqs(int queue, l4_cap_idx_t scheduler) L4_NOTHROW
+l4_scheduler_get_rqs(int queue, int core, l4_cap_idx_t scheduler) L4_NOTHROW
 {
-  return l4_scheduler_get_rqs_u(queue, scheduler,  l4_utcb());
+  return l4_scheduler_get_rqs_u(queue, core, scheduler,  l4_utcb());
 }
 
 L4_INLINE l4_msgtag_t
