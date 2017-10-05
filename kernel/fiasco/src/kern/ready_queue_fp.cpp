@@ -61,7 +61,7 @@ public:
   E *next_to_run() const;
   bool empty(unsigned prio) {return prio_next[prio].empty();}
   bool switch_rq(int* info) {
-	dbgprintf("deploy rq fp\n");
+	//dbgprintf("deploy rq fp\n");
 	int num_sub = info[0];
 	for(int i=1; i<=num_sub; i++)
 	{
@@ -123,7 +123,7 @@ public:
 	return true;
    }
    void _get_rqs(int* info) {
-	dbgprintf("get rq fp\n");
+	//dbgprintf("get fp edf cpu:%d\n",current_cpu());
 	int elem_counter=1;
 	for(int j=0; j<256; j++) {
 			typename List::BaseIterator it = List::iter(prio_next[j].front());
