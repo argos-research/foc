@@ -116,6 +116,10 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
   else
     info.cpu = sched_param->cpus.first(Cpu::present_mask(), Config::max_num_cpus());
 
+  //start time
+  outcb->values[0] = thread->dbg_id();
+  outcb->values[1] = Timer::system_clock();
+
   /* Own work */
 #ifdef CONFIG_SCHED_FP_EDF
   /* edf thread */
@@ -123,7 +127,8 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
   {
     L4_sched_param_deadline	      sched_p;
     sched_p.sched_class     = -3;
-    sched_p.deadline 	    = iutcb->values[5];
+    /* Add deadline to arrival time */
+    sched_p.deadline 	    = (iutcb->values[5])+(outcb->values[1]);
     thread->sched_context()->set(static_cast<L4_sched_param*>(&sched_p));
     sched_param = reinterpret_cast<L4_sched_param const *>(&sched_p);
     info.sp=sched_param;
@@ -159,10 +164,6 @@ Scheduler::sys_run(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Utcb *
 	   sched_param->sched_class);
 
   thread->migrate(&info);
-
-  //start time
-  outcb->values[0] = thread->dbg_id();
-  outcb->values[1] = Timer::system_clock();
 
   return commit_result(0,2);
 }
@@ -240,7 +241,7 @@ Scheduler::sys_get_rqs(L4_fpage::Rights, Syscall_frame *f, Utcb const *iutcb, Ut
 {
 	int info[101];
 	info[1]=iutcb->values[1];
-	Sched_context::Ready_queue &rq = Sched_context::rq.current();
+	Sched_context::Ready_queue &rq = Sched_context::rq.cpu(Cpu_number(iutcb->values[2]));
 	rq.get_rqs(info);
 	int num_subjects=info[0];
 	outcb->values[0]=num_subjects;
