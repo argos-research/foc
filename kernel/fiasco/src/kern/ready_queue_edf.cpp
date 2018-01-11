@@ -112,7 +112,27 @@ E *
 Ready_queue_edf<E>::next_to_run() const
 {
   if (count)
-    return rq.front();
+  {
+    typename List::BaseIterator it;
+    it = List::iter(rq.front());
+    ++it;
+    E *i=rq.front();
+    if(i->deadline()>Timer::system_clock())
+    {
+	//dbgprintf("front deadline: %d current_time: %d\n",i->deadline(),Timer::system_clock());
+        return i;
+    }
+    while(it->deadline()<Timer::system_clock()&&it!= List::iter(rq.front()))
+    {
+        //dbgprintf("Deadline passed %lx(dl:%d) => \n",
+        //   Kobject_dbg::obj_to_id(i->context()),
+        //   i->deadline());
+    	++it;
+    }
+    //if(it->deadline()<Timer::system_clock())
+    	//dbgprintf("Deadline missed:%d\n",Kobject_dbg::obj_to_id(it->context()));
+    return *it;
+  }
 
   if (_current_sched)
     _e(idle)->_dl = _e(_current_sched)->_dl;
@@ -131,12 +151,6 @@ Ready_queue_edf<E>::enqueue(E *i, bool /*is_current_sched*/)
   assert_kdb(cpu_lock.test());
 
   unsigned deadline = i->deadline();
-
-  /* deadline passed */
-  if(deadline<(Timer::system_clock()))
-  {
-     return;
-  }
 
   // Don't enqueue threads which are already enqueued
   if (EXPECT_FALSE (i->in_ready_list()))
