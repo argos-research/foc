@@ -24,6 +24,17 @@ namespace {
 class Platform_arm_rv : public Platform_single_region_ram
 {
   bool probe() { return true; }
+
+  /* enfore two memory regions */
+  void setup_memory_map()
+  {
+    Region_list *ram = mem_manager->ram;
+    Region_list *regions = mem_manager->regions;
+    /* 2x512 MB */
+    ram->add(Region::n(0x20000000, 0x40000000, ".ram", Region::Ram));
+    ram->add(Region::n(0x70000000, 0x90000000, ".ram", Region::Ram));
+  }
+
   void init()
   {
     static L4::Io_register_block_mmio r(0x10009000);
