@@ -28,6 +28,8 @@ SUPPORT_CC_arm-exynos5         := platform/exynos.cc
 SUPPORT_CC_arm-zedboard        := platform/zynq.cc
 SUPPORT_CC_arm-parallella      := platform/zynq.cc
 SUPPORT_CC_arm-cubieboard2     := platform/sunxi.cc
+SUPPORT_CC_arm-wand_quad       := platform/imx.cc
+SUPPORT_CC_arm-sabre_lite      := platform/imx.cc
 
 # PPC
 SUPPORT_CC_ppc32-mpc5200       := platform/mpc5200.cc
