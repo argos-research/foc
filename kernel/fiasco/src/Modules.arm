@@ -44,6 +44,7 @@ PREPROCESS_PARTS-$(CONFIG_SCHED_FIXED_PRIO)  += sched_fixed_prio
 PREPROCESS_PARTS-$(CONFIG_SCHED_WFQ)         += sched_wfq
 PREPROCESS_PARTS-$(CONFIG_SCHED_FP_WFQ)      += sched_fp_wfq
 PREPROCESS_PARTS-$(CONFIG_SCHED_FP_EDF)      += sched_fp_edf
+PREPROCESS_PARTS-$(CONFIG_SCHED_EDF)         += sched_edf
 PREPROCESS_PARTS-$(CONFIG_ARM_LPAE)          += arm_lpae
 PREPROCESS_PARTS-$(CONFIG_CPU_VIRT)                 += hyp vgic
 PREPROCESS_PARTS-y$(CONFIG_CPU_VIRT)                += noncont_mem
@@ -179,7 +180,8 @@ paging_IMPL	  	:= paging-arm paging
 perf_cnt_IMPL		:= perf_cnt perf_cnt-arm
 pic_IMPL		:= pic
 sched_context_IMPL      := sched_context-wfq sched_context-fixed_prio \
-                           sched_context-fp_wfq sched_context-fp_edf sched_context
+                           sched_context-fp_wfq sched_context-fp_edf \
+			   sched_context-edf sched_context
 scu_IMPL                := scu
 space_IMPL		:= space space-arm
 spin_lock_IMPL		:= spin_lock spin_lock-arm

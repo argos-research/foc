@@ -372,6 +372,10 @@ public:
    * @return Consumed CPU time in usecs
    */
   Cpu_time consumed_time();
+  Cpu_time start_time();
+  void set_dead_time(Clock::Time dead);
+  Cpu_time get_dead_time();
+  Cpu_time get_time();
 
   virtual bool kill() = 0;
 
@@ -434,6 +438,8 @@ private:
   Fpu_state _fpu_state;
   // Implementation-specific consumed CPU time (TSC ticks or usecs)
   Clock::Time _consumed_time;
+  Clock::Time _start_time;
+  Clock::Time _dead_time;
 
   Drq _drq;
   Drq_q _drq_q;
@@ -1145,6 +1151,9 @@ PUBLIC inline
 void
 Context::consume_time(Clock::Time quantum)
 {
+  if(_consumed_time==0) {
+	_start_time=Timer::system_clock();
+  }
   _consumed_time += quantum;
 }
 
@@ -1170,6 +1179,36 @@ Context::consumed_time()
   return _consumed_time;
 }
 
+IMPLEMENT inline NEEDS ["config.h", "cpu.h"]
+Cpu_time
+Context::start_time()
+{
+  if (Config::Fine_grained_cputime)
+    return _clock.current().us(_start_time);
+
+  return _start_time;
+}
+
+IMPLEMENT
+void
+Context::set_dead_time(Clock::Time dead)
+{
+	_dead_time=dead;
+}
+
+IMPLEMENT
+Cpu_time
+Context::get_dead_time()
+{
+	return _dead_time;
+}
+
+IMPLEMENT
+Cpu_time
+Context::get_time()
+{
+	return Timer::system_clock();
+}
 
 /**
  * Switch scheduling context and execution context.

@@ -55,6 +55,8 @@ public:
     Op_register_del_irq = 5,
     Op_modify_senders = 6,
     Op_vcpu_control= 7,
+    // Modification for Checkpoint/Restore (rtcr)
+    Op_ex_all_regs = 8,
     Op_gdt_x86 = 0x10,
     Op_set_tpidruro_arm = 0x10,
     Op_set_segment_base_amd64 = 0x12,
@@ -191,7 +193,7 @@ DEFINE_PER_CPU Per_cpu<unsigned long> Thread::nested_trap_recover;
 IMPLEMENT
 Thread::Dbg_stack::Dbg_stack()
 {
-  stack_top = Kmem_alloc::allocator()->unaligned_alloc(Stack_size); 
+  stack_top = Kmem_alloc::allocator()->unaligned_alloc(Stack_size);
   if (stack_top)
     stack_top = (char *)stack_top + Stack_size;
   //printf("JDB STACK start= %p - %p\n", (char *)stack_top - Stack_size, (char *)stack_top);
@@ -426,6 +428,7 @@ PUBLIC
 void
 Thread::halt()
 {
+printf("%d halt %llu\n",(int)dbg_id(),Timer::system_clock());
   // Cancel must be cleared on all kernel entry paths. See slowtraps for
   // why we delay doing it until here.
   state_del(Thread_cancel);
@@ -434,6 +437,7 @@ Thread::halt()
   if (state_change_safely(~Thread_ready, Thread_cancel | Thread_dead))
     while (! (state() & Thread_ready))
       schedule();
+
 }
 
 PUBLIC static
@@ -564,7 +568,7 @@ Thread::do_kill()
   cpu_lock.lock();
 
   state_change_dirty(0, Thread_dead);
-
+  Sched_context::rq.current().add_dead(dbg_id(),Timer::system_clock());
   // dequeue from system queues
   Sched_context::rq.current().ready_dequeue(sched());
 

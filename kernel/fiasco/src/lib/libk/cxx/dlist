@@ -249,7 +249,18 @@ public:
 	  H::set_head(_f, e);
       }
   }
-
+  
+  
+  void exchange( Sd_list *to)
+  {
+  	 T *h = H::head(_f);
+  	 T *h2 = H::head(to->_f);
+  	
+  	 rotate_to(h2);
+  	
+  	 return;
+  }
+  
   void push_back(T *e) { push(e, Back); }
   void push_front(T *e) { push(e, Front); }
   void rotate_to(T *h) { H::set_head(_f, h); }

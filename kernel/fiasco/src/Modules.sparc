@@ -19,6 +19,7 @@ PREPROCESS_PARTS-$(CONFIG_SCHED_FIXED_PRIO)  += sched_fixed_prio
 PREPROCESS_PARTS-$(CONFIG_SCHED_WFQ)         += sched_wfq
 PREPROCESS_PARTS-$(CONFIG_SCHED_FP_WFQ)      += sched_fp_wfq
 PREPROCESS_PARTS-$(CONFIG_SCHED_FP_EDF)      += sched_fp_edf
+PREPROCESS_PARTS-$(CONFIG_SCHED_EDF)         += sched_edf
 
 PREPROCESS_PARTS	+= $(PREPROCESS_PARTS-y)
 
@@ -133,7 +134,8 @@ obj_space_IMPL		:= obj_space obj_space-phys
 paging_IMPL		:= paging-sparc paging
 pic_IMPL		:= pic
 sched_context_IMPL      := sched_context-wfq sched_context-fixed_prio \
-                           sched_context-fp_wfq sched_context-fp_edf sched_context
+                           sched_context-fp_wfq sched_context-fp_edf \
+			   sched_context-edf sched_context
 space_IMPL		:= space space-sparc
 startup_IMPL		:= startup startup-sparc
 sys_call_page_IMPL	:= sys_call_page sys_call_page-sparc

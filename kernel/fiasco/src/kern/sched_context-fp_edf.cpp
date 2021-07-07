@@ -93,6 +93,12 @@ public:
     void dequeue(Sched_context *);
     void requeue(Sched_context *sc);
 
+    bool empty(unsigned);  //gmc
+    bool switch_rq(int* info); //gmc
+    void _get_rqs(int* info);
+    void _get_dead(long long unsigned* info);
+    void _add_dead(int id, long long unsigned time);
+
     void set_idle(Sched_context *sc)
     { sc->_t = Deadline; sc->_sc.edf._p = 0; edf_rq.set_idle(sc); }
 
@@ -125,7 +131,6 @@ IMPLEMENTATION [sched_fp_edf]:
 PUBLIC
 Sched_context::Sched_context()
 {
-  dbgprintf("[Sched_context] Created default Sched_context object with type:Fixed_prio\n");
   _t = Fixed_prio;
   _sc.fp._p = Config::Default_prio;
   _sc.fp._q = Config::Default_time_slice;
@@ -141,7 +146,6 @@ Sched_context::Sched_context(Sc_type type, unsigned metric)
 {
   if (type == Fixed_prio)
   {
-    dbgprintf("[Sched_context] Created Sched_context object with type:Fixed_prio\n");
     _t = Fixed_prio;
     _sc.fp._p = metric;
     _sc.fp._q = Config::Default_time_slice;
@@ -150,7 +154,6 @@ Sched_context::Sched_context(Sc_type type, unsigned metric)
   }
   else
   {
-    dbgprintf("[Sched_context] Created Sched_context object with type:Deadline\n");
     _t = Deadline;
     _sc.edf._p = 0;
     _sc.edf._dl = metric;
@@ -182,7 +185,11 @@ Sched_context::in_ready_list() const
   // This magically works for the fp list and the heap,
   // because wfq._ready_link and fp._ready_next are the
   // same memory location
-  return _sc.edf._ready_link != 0;
+  if(_t==Fixed_prio||_t>=0)
+    return Fp_list::in_list(this);
+  else
+    return _sc.edf._ready_link != 0;
+  return false;
 }
 
 /**
@@ -233,32 +240,33 @@ int
 Sched_context::set(L4_sched_param const *_p)
 {
   Sp const *p = reinterpret_cast<Sp const *>(_p);
-
   if (p->p.sched_class >= 0)
   {
-    // Legacy Fixed_prio
-    dbgprintf("[Sched_context::set] Set type to legacy Fixed_prio (id:%lx, prio:%ld)\n",
-               Kobject_dbg::obj_to_id(this->context()),
-               p->p.sched_class);
+    // legacy fixed prio
     _t = Fixed_prio;
     _sc.fp._p = p->legacy_fixed_prio.prio;
     if (p->legacy_fixed_prio.prio > 255)
       _sc.fp._p = 255;
 
+    _sc.fp._q = p->legacy_fixed_prio.quantum;
     if (p->legacy_fixed_prio.quantum == 0)
       _sc.fp._q = Config::Default_time_slice;
-    else
-      _sc.fp._q = p->legacy_fixed_prio.quantum;
-
     return 0;
   }
-
   switch (p->p.sched_class)
   {
+
+    case L4_sched_param_deadline::Class:
+      if (p->deadline.deadline == 0)
+        return -L4_err::EInval;
+      _t = Deadline;
+      _sc.edf._p = 0;
+      _sc.edf._dl = p->deadline.deadline;
+      _sc.edf._q = Config::Default_time_slice;
+
+      break;
+
     case L4_sched_param_fixed_prio::Class:
-      dbgprintf("[Sched_context::set] Set type to Fixed_prio (id:%lx, prio:%ld)\n",
-                 Kobject_dbg::obj_to_id(this->context()),
-                 p->fixed_prio.prio);
       _t = Fixed_prio;
 
       _sc.fp._p = p->fixed_prio.prio;
@@ -272,19 +280,6 @@ Sched_context::set(L4_sched_param const *_p)
 
       break;
 
-    case L4_sched_param_deadline::Class:
-      if (p->deadline.deadline == 0)
-        return -L4_err::EInval;
-      dbgprintf("[Sched_context::set] Set type to Deadline (id:%lx, dl:%ld)\n",
-                 Kobject_dbg::obj_to_id(this->context()),
-                 p->deadline.deadline);
-      _t = Deadline;
-      _sc.edf._p = 0;
-      _sc.edf._dl = p->deadline.deadline;
-      _sc.edf._q = Config::Default_time_slice;
-
-      break;
- 
     default:
       return L4_err::ERange;
   };
@@ -294,8 +289,8 @@ Sched_context::set(L4_sched_param const *_p)
    * Dequeuing & enqueuing ensures that the Sched_context object is enqueued in the appropriate ready queue
    * since its type may have changed due to this set operation.
    */
-  rq.current().dequeue(this);
-  rq.current().enqueue(this, this == rq.current().current_sched());
+  //rq.current().dequeue(this);
+  //rq.current().enqueue(this, this == rq.current().current_sched());
 
   return 0;
 }
@@ -319,12 +314,11 @@ void
 Sched_context::Ready_queue_base::enqueue(Sched_context *sc, bool is_current)
 {
   if (sc->_t == Fixed_prio)
+  {
     fp_rq.enqueue(sc, is_current);
+  }
   else
   {
-    dbgprintf("[Sched_context::enqueue] Enqueuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
-               Kobject_dbg::obj_to_id(sc->context()),
-               sc->deadline());
     edf_rq.enqueue(sc, is_current);
   }
 }
@@ -339,9 +333,6 @@ Sched_context::Ready_queue_base::dequeue(Sched_context *sc)
   if (sc->_t == Fixed_prio)
     fp_rq.dequeue(sc);
   else
-    dbgprintf("[Sched_context::dequeue] Dequeuing Sched_context object in edf_rq (id:%lx, dl:%d)\n",
-              Kobject_dbg::obj_to_id(sc->context()),
-              sc->deadline());
     edf_rq.dequeue(sc);
 }
 
@@ -353,6 +344,50 @@ Sched_context::Ready_queue_base::requeue(Sched_context *sc)
     fp_rq.requeue(sc);
   else
     edf_rq.requeue(sc);
+}
+
+IMPLEMENT
+bool
+Sched_context::Ready_queue_base::empty(unsigned prio) //gmc
+{
+  //if (sc->_t == Fixed_prio)
+    return fp_rq.empty(prio);
+//  else
+//    edf_rq.requeue(sc);
+}
+
+IMPLEMENT
+bool
+Sched_context::Ready_queue_base::switch_rq(int* info) //gmc
+{
+	if(info[1]==0)
+		return fp_rq.switch_rq(info);
+	else
+		return edf_rq.switch_rq(info);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_get_rqs(int* info)
+{
+	if(info[1]==0)
+		fp_rq._get_rqs(info);
+	else
+		edf_rq._get_rqs(info);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_get_dead(long long unsigned* info)
+{
+	fp_rq._get_dead(info);
+}
+
+IMPLEMENT
+void
+Sched_context::Ready_queue_base::_add_dead(int id, long long unsigned time)
+{
+	fp_rq._add_dead(id,time);
 }
 
 PUBLIC inline
@@ -375,19 +410,28 @@ PUBLIC inline
 void
 Sched_context::replenish()
 {
-  _sc.fp._left = _sc.fp._q;
+  if (_t == Fixed_prio)
+    _sc.fp._left = _sc.fp._q;
+  else
+    _sc.edf._left = _sc.edf._q;  
 }
 
 PUBLIC inline
 void
 Sched_context::set_left(Unsigned64 l)
 {
-  _sc.fp._left = l;
+  if (_t == Fixed_prio)
+    _sc.fp._left = l;
+  else
+    _sc.edf._left = l;
 }
 
 PUBLIC inline
 Unsigned64
 Sched_context::left() const
 {
-  return _sc.fp._left;
+  if (_t == Fixed_prio)
+    return _sc.fp._left;
+  else
+    return _sc.edf._left;
 }

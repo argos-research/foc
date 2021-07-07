@@ -566,7 +566,7 @@ config UX_NET
 
 choice 
 	prompt "Scheduler"
-	default FIXED_PRIO
+	default SCHED_FP_EDF
 
 config SCHED_FIXED_PRIO
 	bool "Fixed priority scheduler"
@@ -593,6 +593,11 @@ config SCHED_FP_EDF
         help
           Choose this for the combination of the fixed priority scheduler
           and the real-time capable Earliest Deadline First (EDF) scheduler
+
+config SCHED_EDF
+	bool "Earliest Deadline First Scheduler"
+	help
+	  Choose this Scheduler for a EDF Scheduler
 
 endchoice
 

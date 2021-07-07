@@ -58,6 +58,7 @@ public:
     Kernel_prio = 0,
     // default prio
     Default_prio = 1,
+	Default_deadline = 1,
 
     Warn_level = CONFIG_WARN_LEVEL,
 

@@ -47,6 +47,26 @@ public:
       enqueue(to, false);
     }
 
+    bool switch_ready_queue(int* info) //gmc
+    {
+    	return switch_rq(info);
+    }
+
+    void get_rqs(int* info)
+    {
+	_get_rqs(info);
+    }
+
+    void get_dead(long long unsigned* info)
+    {
+	_get_dead(info);
+    }
+
+    void add_dead(int id, long long unsigned time)
+    {
+	_add_dead(id, time);
+    }
+
     Context *schedule_in_progress;
   };
 
@@ -60,6 +80,9 @@ IMPLEMENTATION:
 #include "timeout.h"
 #include "globals.h"
 #include "logdefs.h"
+
+#include "kobject_dbg.h"
+#include "debug_output.h"
 
 DEFINE_PER_CPU Per_cpu<Sched_context::Ready_queue> Sched_context::rq;
 
